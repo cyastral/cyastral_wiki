@@ -1,0 +1,9 @@
+node_modules
+.next
+*.log
+*.tar
+.git
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env.*
