@@ -38,7 +38,7 @@ export default function NavBar() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                width: '30%'  // 这一个Box占父容器x的30%
+                width: '30%'
             }}>
                 <TextField
                 size='small'
