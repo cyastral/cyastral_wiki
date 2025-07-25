@@ -22,7 +22,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: npx prisma migrate deploy
+    command: prisma migrate deploy
     restart: "no"
 
   web:
