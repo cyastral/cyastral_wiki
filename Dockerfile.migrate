@@ -5,13 +5,11 @@ RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-ENV PRISMA_CLI_BINARY_TARGETS="native"
-
 # 只复制 Prisma 相关文件（不需要 package.json）
 COPY prisma ./prisma/
 
 # 全局安装 Prisma CLI（只安装这一个包）
-RUN npm install -g prisma && npm cache clean --force
+RUN PRISMA_CLI_BINARY_TARGETS="native" npm install -g prisma && npm cache clean --force
 
 # 默认命令
 CMD ["prisma", "migrate", "deploy"]
