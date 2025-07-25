@@ -1,47 +1,17 @@
-# syntax=docker.io/docker/dockerfile:1
+FROM node:24-alpine
 
-FROM node:18-alpine AS base
+# 安装 Prisma 需要的依赖
+RUN apk add --no-cache openssl
 
-# Install dependencies only when needed
-FROM base AS deps
-# 确保安装了 openssl，Prisma 需要它
-RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# 复制 package.json 和 lockfile
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+ENV PRISMA_CLI_BINARY_TARGETS="native"
 
-# 安装依赖，包括 devDependencies，因为 prisma CLI 通常是 devDependency
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+# 只复制 Prisma 相关文件（不需要 package.json）
+COPY prisma ./prisma/
 
-# 构建阶段，用于生成 Prisma Client
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY prisma ./prisma/ 
-# 复制你的 Prisma schema 和 migrations 文件夹
+# 全局安装 Prisma CLI（只安装这一个包）
+RUN npm install -g prisma && npm cache clean --force
 
-# 生成 Prisma Client，这是迁移服务需要的
-RUN npx prisma generate
-
-# 迁移运行时阶段
-FROM base AS runner
-WORKDIR /app
-
-# 复制 node_modules 和 prisma 相关文件
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/prisma /app/prisma
-# 如果你的 Prisma Client 生成在 node_modules/.prisma 之外，也需要复制
-
-# 设置用户，与你的 Next.js 应用保持一致
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-USER nextjs
-
-# 默认命令，会被 docker-compose 覆盖为执行迁移的命令
-CMD ["echo", "This is a Prisma migration container."]
+# 默认命令
+CMD ["prisma", "migrate", "deploy"]
