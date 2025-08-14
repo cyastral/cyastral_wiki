@@ -5,18 +5,17 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-model Song{
-  id          Int       @id @default(autoincrement())
-  song_name   String    @unique
-  singer      vcSinger[]
+model Song {
+  id        Int        @id @default(autoincrement())
+  song_name String     @unique
+  singer    vcSinger[] @relation("SongTovcSinger")
 }
 
-model vcSinger{
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  songs       Song[]
+model vcSinger {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  songs Song[] @relation("SongTovcSinger")
 }
-  

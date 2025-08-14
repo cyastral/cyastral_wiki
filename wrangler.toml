@@ -1,0 +1,14 @@
+name = "cyastral-wiki"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+compatibility_flags = ["nodejs_compat","global_fetch_strictly_public"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cyastral-db"
+database_id = "8f3b3553-9d12-431c-bcde-86136c85604a"
+migrations_dir = "prisma/migrations"

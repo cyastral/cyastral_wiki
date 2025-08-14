@@ -1,6 +1,6 @@
 {
   "/favicon.ico/route": "/favicon.ico",
   "/_not-found/page": "/_not-found",
-  "/page": "/",
-  "/songlist/page": "/songlist"
+  "/songlist/page": "/songlist",
+  "/page": "/"
 }
