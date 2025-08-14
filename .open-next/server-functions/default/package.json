@@ -9,10 +9,11 @@
     "lint": "next lint",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
-  },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "db:check": "wrangler d1 migrations list cyastral-db --remote",
+    "db:deploy": "wrangler d1 migrations apply cyastral-db --remote",
+    "db:dev": "prisma migrate dev"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -23,7 +24,9 @@
     "@mui/material": "^7.1.0",
     "@mui/material-nextjs": "^7.1.0",
     "@opennextjs/cloudflare": "^1.6.2",
-    "@prisma/client": "^6.9.0",
+    "@prisma/adapter-d1": "^6.13.0",
+    "@prisma/client": "^6.13.0",
+    "dotenv": "^17.2.1",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -35,7 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "prisma": "^6.9.0",
+    "prisma": "^6.13.0",
     "ts-node": "^10.9.2",
     "typescript": "^5",
     "wrangler": "^4.26.1"

@@ -9,7 +9,11 @@
     "lint": "next lint",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "db:check": "wrangler d1 migrations list cyastral-db --remote",
+    "db:deploy": "wrangler d1 migrations apply cyastral-db --remote",
+    "db:dev": "prisma migrate dev"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
