@@ -5,7 +5,8 @@ import React, { useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import AddIcon from '@mui/icons-material/Add';
 
 export default function NavBar() {
     const router = useRouter();
@@ -13,6 +14,10 @@ export default function NavBar() {
 
     const handleSearch = () => {
         router.push(`/songlist?query=${query}`);
+    }
+
+    const handleAdd = () => {
+        router.push('/songs/add');
     }
     
     return (
@@ -22,6 +27,7 @@ export default function NavBar() {
             justifyContent: 'space-between',
             width: '100%',
             margin: '0 auto',
+            borderBottom: '1px solid red',
         }}>
             <Box sx={{
                 display: 'flex',
@@ -51,9 +57,14 @@ export default function NavBar() {
                 </IconButton>
             </Box>
 
-            <IconButton color='primary'>
-                <AccountCircleIcon />
-            </IconButton>
+            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                <IconButton color='primary' onClick={handleAdd}>          
+                    <AddIcon />
+                </IconButton>
+                <IconButton color='primary'>          
+                    <AccountCircleIcon />
+                </IconButton>
+            </Box>
         </Box>
     );
 }

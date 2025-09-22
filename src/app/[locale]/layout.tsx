@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
 import { theme } from "@/theme/theme ";
 import NavBar from "@/ui/NavBar";
 import { Box } from "@mui/material";
+import { NextIntlClientProvider } from "next-intl";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -44,10 +45,12 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <AppRouterCacheProvider>
             <ThemeProvider theme={theme}>
-              <Box sx={{display:"flex", flexDirection:"column", gap:2, justifyContent:"center", alignItems:"center"}}>
-                <NavBar />
-                {children}
-              </Box>
+              <NextIntlClientProvider>
+                <Box sx={{display:"flex", flexDirection:"column", gap:2, justifyContent:"center", alignItems:"center"}}>
+                  <NavBar />
+                  {children}
+                </Box>
+              </NextIntlClientProvider>
             </ThemeProvider>
           </AppRouterCacheProvider>
       </body>
