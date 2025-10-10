@@ -1,13 +1,11 @@
 'use client'
-
-import { Box, Button } from "@mui/material";
-import { addsinger } from "./action";
-
+import { Button } from "@/components/ui/button";
 
 export default function Test() {
     return (
-        <Box>
-            <Button variant="contained" color="primary" onClick={addsinger}>Test</Button>
-        </Box>
+        <>
+            <h1 className="text-3xl text-red-500">Hello World</h1>
+            <Button>Test</Button>
+        </>
     )
 }
