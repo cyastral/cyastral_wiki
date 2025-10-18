@@ -1,10 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { List, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import  SearchBox  from "./_components/SearchBox";
 
-export default function NewNavBar() {
+export default function NavBar() {
     return (
         <div>
             <header className=" h-14">

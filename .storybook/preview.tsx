@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import React from 'react';
 import '../src/app/globals.css';
 
+
 const message = {};
 
 const preview: Preview = {
@@ -24,6 +25,7 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
+      
       <NextIntlClientProvider messages={message} locale="en">
         <Story />
       </NextIntlClientProvider>
