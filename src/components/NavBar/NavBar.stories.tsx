@@ -1,13 +1,13 @@
 // src/components/layout/navbar.stories.tsx
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import NewNavBar from './NewNavBar';
+import NavBar from './NavBar';
 
 
-const meta: Meta<typeof NewNavBar> = {
+const meta: Meta<typeof NavBar> = {
 
   title: 'Layout/Navbar', 
-  component: NewNavBar, 
+  component: NavBar, 
   parameters: {
     layout: 'fullscreen',
   },

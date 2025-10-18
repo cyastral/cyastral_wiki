@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 import SongCard from "@/components/SongCard";
-import { Box } from "@mui/material";
 import { getPrisma } from "@/lib/prisma";
 
 
@@ -24,11 +23,11 @@ export default async function SongList({
     
     return(
         <>
-            <Box sx={{ display:"flex", flexDirection:"column", gap:2, justifyContent:"center", alignItems:"center"}}>
+            <div>
                 {songs.map((song) => (
                     <SongCard key={song.id} songName={song.song_name} singer={song.singer.map((singer)=> singer.name.toString()).join(", ")} />
                 ))}
-            </Box>
+            </div>
         </>
     )
 }

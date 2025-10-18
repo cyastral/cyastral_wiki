@@ -9,6 +9,7 @@ export async function addSongAction(prevState: any, formData: FormData) {
 
         if(!songName || songName.trim().length === 0) {
             return { error : "Songname is required"}
+            
         } else if(selectedSingers.length === 0) {
             return { error : "At least one singer is required"}
         }

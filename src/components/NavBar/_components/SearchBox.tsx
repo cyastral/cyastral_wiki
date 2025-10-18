@@ -8,15 +8,19 @@ import { useState } from "react";
 
 export default function SearchBox(){
     const router = useRouter();
-    const query = useState("");
+    const [query, setQuery] = useState("");
 
     const handleSearch = () => {
-        router.push('')
+        router.push(`/songlist?query=${query}`)
+    }
+    
+    const handleChange = (e:React.ChangeEvent<HTMLInputElement>) => {
+        setQuery(e.target.value);
     }
 
     return(
         <div className="flex items-center gap-4 w-120">
-            <Input></Input>
+            <Input value={query} onChange={handleChange}></Input>
             <Button variant="ghost" onClick={handleSearch}>
                 <Search className="size-6"/>
             </Button>
