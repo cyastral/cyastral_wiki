@@ -1,5 +1,6 @@
 ignoredBuiltDependencies:
   - '@tailwindcss/oxide'
+  - rclone.js
 
 onlyBuiltDependencies:
   - '@prisma/client'

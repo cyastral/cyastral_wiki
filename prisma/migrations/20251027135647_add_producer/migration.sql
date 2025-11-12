@@ -1,0 +1,14 @@
+-- CreateTable
+CREATE TABLE "Producer" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "ProducerOnSongs" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "producerID" INTEGER NOT NULL,
+    "songID" INTEGER NOT NULL,
+    CONSTRAINT "ProducerOnSongs_producerID_fkey" FOREIGN KEY ("producerID") REFERENCES "Producer" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "ProducerOnSongs_songID_fkey" FOREIGN KEY ("songID") REFERENCES "Song" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);

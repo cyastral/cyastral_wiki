@@ -12,10 +12,25 @@ model Song {
   id        Int        @id @default(autoincrement())
   song_name String     @unique
   singer    vcSinger[] @relation("SongTovcSinger")
+  producer  ProducerOnSongs[]
 }
 
 model vcSinger {
   id    Int    @id @default(autoincrement())
   name  String @unique
   songs Song[] @relation("SongTovcSinger")
+}
+
+model Producer {
+  id Int @id @default(autoincrement())
+  name String
+  songs ProducerOnSongs[]
+}
+
+model ProducerOnSongs{
+  id Int @id @default(autoincrement())
+  producer Producer @relation(fields: [producerID], references: [id])
+  producerID Int
+  song Song @relation(fields: [songID],references: [id])
+  songID Int
 }
