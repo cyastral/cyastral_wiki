@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useActionState } from "react";
 import { addSongAction } from "./action";
+import { AddSongForm } from "./_components/AddSongForm";
 
 export default function AddSong() {
 
@@ -34,9 +35,9 @@ export default function AddSong() {
 
     return (
         <div>
-            <div className="flex justify-center bg-slate-200 mx-20 rounded-xl shadow-md">
+            <AddSongForm/>
+            <div className="flex flex-col items-center bg-slate-200 mx-20 rounded-xl shadow-md">
                 <h1 className="text-5xl text-cyan-400">Add Song</h1>
-                    
             </div>
         </div>
     )
