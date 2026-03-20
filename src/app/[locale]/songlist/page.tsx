@@ -12,20 +12,20 @@ export default async function SongList({
     const {query} = await searchParams;
     const songs = await prisma.song.findMany({
         include: {
-            singer: true,
+            singers: true,
         },
         where: {
-            song_name: {    
+            songName: {    
                 contains: query || "",
             },
         },
     });
-    
+
     return(
         <>
-            <div>
+            <div className="flex flex-col items-center w-full">
                 {songs.map((song) => (
-                    <SongCard key={song.id} songName={song.song_name} singer={song.singer.map((singer)=> singer.name.toString()).join(", ")} />
+                    <SongCard key={song.id} song={song} />
                 ))}
             </div>
         </>

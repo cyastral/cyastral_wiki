@@ -9,28 +9,40 @@ datasource db {
 }
 
 model Song {
-  id        Int        @id @default(autoincrement())
-  song_name String     @unique
-  singer    vcSinger[] @relation("SongTovcSinger")
-  producer  ProducerOnSongs[]
+  id        Int               @id @default(autoincrement())
+  songName  String
+  singers   VirtualSinger[]   @relation("SongToVirtualSinger")
+  producers ProducerOnSongs[]
+  links     Link[]
+  coverUrl  String?
+  audioUrl  String?
+  source    String
+  sourceId  String
 }
 
-model vcSinger {
+model Link {
+  id     Int    @id @default(autoincrement())
+  url    String
+  songId Int @map("songID")
+  song   Song   @relation(fields: [songId], references: [id])
+}
+
+model VirtualSinger {
   id    Int    @id @default(autoincrement())
   name  String @unique
-  songs Song[] @relation("SongTovcSinger")
+  songs Song[] @relation("SongToVirtualSinger")
 }
 
 model Producer {
-  id Int @id @default(autoincrement())
-  name String
+  id    Int               @id @default(autoincrement())
+  name  String
   songs ProducerOnSongs[]
 }
 
-model ProducerOnSongs{
-  id Int @id @default(autoincrement())
-  producer Producer @relation(fields: [producerID], references: [id])
-  producerID Int
-  song Song @relation(fields: [songID],references: [id])
-  songID Int
+model ProducerOnSongs {
+  id         Int      @id @default(autoincrement())
+  producer   Producer @relation(fields: [producerId], references: [id])
+  producerId Int
+  song       Song     @relation(fields: [songId], references: [id])
+  songId     Int
 }

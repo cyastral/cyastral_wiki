@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "../globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import NavBar from "@/components/NavBar/NavBar";
+import { Toaster } from "@/components/ui/sonner";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -42,6 +43,7 @@ export default function RootLayout({
         <NextIntlClientProvider>
           <NavBar />
           {children}
+          <Toaster />
         </NextIntlClientProvider>
       </body>
     </html>

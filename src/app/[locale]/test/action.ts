@@ -4,7 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 export async function addsinger(){
     const prisma = await getPrisma();
     try{
-        await prisma.vcSinger.create({
+        await prisma.virtualSinger.create({
             data: {
                 name: "Hatsune Miku",
             },
