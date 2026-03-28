@@ -3,6 +3,7 @@ import { DetailPlayer } from "./_components/DetailPlayer";
 import { ProducerInfo } from "./_components/ProducerInfo";
 import { SongInfo } from "./_components/SongInfo";
 import { notFound } from "next/navigation";
+import { mapDbSongtoPlayerSong } from "@/lib/mapDbSongtoPlayersong";
 
 export default async function songInfoPage ({params}: {params: Promise<{id: string}>}) {
     const { id } = await params;
@@ -18,7 +19,11 @@ export default async function songInfoPage ({params}: {params: Promise<{id: stri
         }
     })
     if(!song) notFound();
-    if(!song.audioUrl) {
+
+    //mapper转换
+    const playerSong = mapDbSongtoPlayerSong(song);
+
+    if(!playerSong.audioUrl) {
         return (
         <div className="space-y-6 px-4 py-2">
             <div className="rounded-xl border p-4">这首歌还没有音频文件</div>
@@ -33,7 +38,7 @@ export default async function songInfoPage ({params}: {params: Promise<{id: stri
 
     return (
     <div className="space-y-6 px-4 py-2">
-        <DetailPlayer src={song.audioUrl}></DetailPlayer>
+        <DetailPlayer song={playerSong}></DetailPlayer>
 
         <div className="grid grid-cols-2 gap-6">
             <ProducerInfo></ProducerInfo>

@@ -1,12 +1,14 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
+import { usePlayerStore } from "@/store/player-store";
+import type { Song as PlayerSong } from "@/store/player-store";
 import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react"
 
 
 
-export function DetailPlayer({src}: { src:string }) {
+export function DetailPlayer({song}: {song: PlayerSong}) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [paused, setPaused] = useState(true); 
     const [currentTime, setCurrentTime] = useState(0);
@@ -14,6 +16,7 @@ export function DetailPlayer({src}: { src:string }) {
     const [isSeeking, setIsSeeking] = useState(false);
     const [seekTime, setSeekTime] = useState(0);
     const [volume, setVolume] = useState(0.2);
+    const player = usePlayerStore((state) => state)
 
     //格式化时间
     function formatTime (sec: number){
@@ -25,6 +28,7 @@ export function DetailPlayer({src}: { src:string }) {
         return `${m}:${s.toString().padStart(2,"0")}`
     }
 
+    /*
     //创建audio对象,绑定监听
     useEffect(() => {
         const audio = new Audio(src);
@@ -50,6 +54,7 @@ export function DetailPlayer({src}: { src:string }) {
             audioRef.current = null;
         }
     },[src]);
+    */
 
     async function togglePlay() {
         const audio = audioRef.current;
@@ -64,6 +69,10 @@ export function DetailPlayer({src}: { src:string }) {
         } else {
             audio.pause();
         }
+    }
+
+    const handlePlay = () => {
+        player.playSong(song);
     }
 
     return (
@@ -111,6 +120,13 @@ export function DetailPlayer({src}: { src:string }) {
                     }}
                     className="w-24"
                     />
+                </div>
+
+                <div>
+                    <Button
+                    onClick={handlePlay}>
+                        addsong to global list
+                    </Button>
                 </div>
             </div>
 

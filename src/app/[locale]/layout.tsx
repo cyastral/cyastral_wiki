@@ -4,6 +4,9 @@ import "../globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import NavBar from "@/components/NavBar/NavBar";
 import { Toaster } from "@/components/ui/sonner";
+import { PlayerStoreProvider } from "@/store/player-store";
+import BottomBar from "@/components/BottomBar/BottomBar";
+import { AudioEngine } from "@/components/AudioEngine/AudioEngine";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -42,7 +45,11 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <NextIntlClientProvider>
           <NavBar />
+          <PlayerStoreProvider>
           {children}
+          <AudioEngine/>
+          <BottomBar/>
+          </PlayerStoreProvider>
           <Toaster />
         </NextIntlClientProvider>
       </body>

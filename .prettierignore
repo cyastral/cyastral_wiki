@@ -1,0 +1,14 @@
+# 忽略包管理和依赖文件
+node_modules
+pnpm-lock.yaml
+
+# 忽略构建输出目录 (根据你的框架选择)
+dist
+build
+.next
+out
+
+# 忽略不需要格式化的静态资源
+public
+.env*
+*.svg
