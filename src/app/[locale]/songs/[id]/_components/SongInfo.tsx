@@ -1,5 +1,3 @@
-export function SongInfo () {
-    return (
-        <div className="bg-green-400 rounded-3xl min-h-30 p-5">Right</div>
-    )
+export function SongInfo() {
+    return <div className="min-h-30 rounded-3xl bg-green-400 p-5">Right</div>;
 }

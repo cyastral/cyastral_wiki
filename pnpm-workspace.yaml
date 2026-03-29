@@ -1,12 +1,12 @@
 ignoredBuiltDependencies:
-  - '@tailwindcss/oxide'
-  - rclone.js
+    - "@tailwindcss/oxide"
+    - rclone.js
 
 onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - esbuild
-  - prisma
-  - sharp
-  - unrs-resolver
-  - workerd
+    - "@prisma/client"
+    - "@prisma/engines"
+    - esbuild
+    - prisma
+    - sharp
+    - unrs-resolver
+    - workerd

@@ -1,5 +1,3 @@
-export function ProducerInfo () {
-    return (
-        <div className="bg-green-400 rounded-3xl min-h-30 p-5">left</div>
-    )
+export function ProducerInfo() {
+    return <div className="min-h-30 rounded-3xl bg-green-400 p-5">left</div>;
 }

@@ -1,30 +1,32 @@
 import { Link } from "@/i18n/navigation";
 import { List, Search, Plus, Ghost } from "lucide-react";
-import  SearchBox  from "./_components/SearchBox";
+import SearchBox from "./_components/SearchBox";
 import { Button } from "../ui/button";
-
 
 export default function NavBar() {
     return (
         <div>
             <header className="h-14">
-                <div className="items-center justify-between px-4 flex h-full">
-                    <Link href="/" className="block rounded-md p-2 hover:bg-accent group">
-                        <List className="group-hover:scale-125 transition-transform duration-125"/>
+                <div className="flex h-full items-center justify-between px-4">
+                    <Link
+                        href="/"
+                        className="hover:bg-accent group block rounded-md p-2"
+                    >
+                        <List className="transition-transform duration-125 group-hover:scale-125" />
                     </Link>
 
                     <div>
                         <SearchBox />
                     </div>
 
-                    <Link href="/songs/add" className="rounded-md p-2 hover:bg-accent">
+                    <Link
+                        href="/songs/add"
+                        className="hover:bg-accent rounded-md p-2"
+                    >
                         <Plus />
                     </Link>
-
                 </div>
             </header>
         </div>
-
-        
-    )
+    );
 }
