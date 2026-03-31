@@ -7,6 +7,7 @@ import { useStore } from "zustand";
 export interface Song {
     name: string;
     audioUrl: string | null;
+    id: number;
 }
 
 export interface PlayerState {
@@ -19,6 +20,7 @@ export interface PlayerState {
     isPlaying: boolean;
     currentTime: number;
     duration: number;
+    isSeeking: boolean;
 }
 
 export interface PlayerActions {
@@ -40,6 +42,7 @@ const defaultInitState: PlayerState = {
     isPlaying: false,
     currentTime: 0,
     duration: 0,
+    isSeeking: false,
 };
 
 // 工厂函数
@@ -53,14 +56,25 @@ export const createPlayerStore = (
 
                 playSong: (song) => {
                     set((state) => {
-                        const newQueue = [...state.queue, song];
+                        //查找是否已有该歌曲,没有返回-1
+                        const exitingIndex = state.queue.findIndex(
+                            (s) => s.id === song.id,
+                        );
+                        if (exitingIndex == -1) {
+                            const newQueue = [...state.queue, song];
+                            return {
+                                queue: newQueue,
+                                currentIndex: newQueue.length - 1,
+                                isPlaying: true,
+                            };
+                        }
                         return {
-                            queue: newQueue,
-                            currentIndex: newQueue.length - 1,
+                            currentIndex: exitingIndex,
                             isPlaying: true,
                         };
                     });
                 },
+
                 nextSong: () => {},
                 prevSong: () => {},
                 togglePlay: () => {

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 export function AudioEngine() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const currentLoadedId = useRef<number | null>(null);
 
     const queue = usePlayerStore((state) => state.queue);
     const currentIndex = usePlayerStore((state) => state.currentIndex);
@@ -16,32 +17,28 @@ export function AudioEngine() {
         audioRef.current.volume = 0.2;
     }, []);
 
-    //监听队列变化
-    useEffect(() => {
-        if (!audioRef.current) return;
 
-        const currentSong = queue[currentIndex];
-        if (currentSong?.audioUrl) {
-            audioRef.current.src = currentSong.audioUrl;
-        }
-    }, [queue, currentIndex]);
-
-    //监听播放状态
+    //状态同步
     useEffect(() => {
         const audio = audioRef.current;
-        if (!audio) return;
-        if (!audio.src) return;
+        const currentAudio = queue[currentIndex];
+        if (!audio || !currentAudio) return;
 
-        if (isPlaying) {
-            const PlayPromise = audio.play();
-            if (PlayPromise !== undefined) {
-                PlayPromise.catch((error) => {
-                    console.error("播放失败", error);
-                });
-            }
+        //当前播放不一致，更新当前src
+        if (
+            currentAudio.id != currentLoadedId.current &&
+            currentAudio.audioUrl
+        ) {
+            audio.src = currentAudio.audioUrl;
+            currentLoadedId.current = currentAudio.id;
+        }
+
+        if (isPlaying == true) {
+            audio.play();
         } else {
             audio.pause();
         }
-    }, [isPlaying]);
+        
+    }, [queue, currentIndex, isPlaying]);
     return null;
 }
