@@ -8,7 +8,7 @@ export function AudioEngine() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const currentLoadedId = useRef<number | null>(null);
 
-    const { queue, currentIndex, isPlaying, volume, seekTarget } =
+    const { queue, currentIndex, isPlaying, volume, seekTarget, playMode } =
         usePlayerStore(
             useShallow((state) => ({
                 queue: state.queue,
@@ -16,12 +16,12 @@ export function AudioEngine() {
                 isPlaying: state.isPlaying,
                 volume: state.volume,
                 seekTarget: state.seekTarget,
+                playMode: state.playMode,
             })),
         );
 
-    const { setTimeUpdate, setDuration, setSeekTarget } = usePlayerStore(
-        (state) => state.actions,
-    );
+    const { setTimeUpdate, setDuration, setSeekTarget, autoNext } =
+        usePlayerStore((state) => state.actions);
     const storeApi = usePlayerStoreApi();
     //初始化
     useEffect(() => {
@@ -38,6 +38,11 @@ export function AudioEngine() {
         });
         audio.addEventListener("loadedmetadata", () => {
             setDuration(audio.duration);
+        });
+
+        //监听播放完毕跳转
+        audio.addEventListener("ended", () => {
+            autoNext();
         });
     }, []);
 
@@ -79,5 +84,13 @@ export function AudioEngine() {
             setSeekTarget(null);
         }
     }, [seekTarget]);
+
+    //同步loop状态
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (audio) {
+            audio.loop = playMode === "single-loop";
+        }
+    }, [playMode]);
     return null;
 }

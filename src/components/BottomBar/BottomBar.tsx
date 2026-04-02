@@ -14,6 +14,7 @@ export default function BottomBar() {
         currentTime,
         isSeeking,
         duration,
+        palyMode
     } = usePlayerStore(
         useShallow((state) => ({
             queue: state.queue,
@@ -23,6 +24,7 @@ export default function BottomBar() {
             currentTime: state.currentTime,
             isSeeking: state.isSeeking,
             duration: state.duration,
+            palyMode: state.playMode,
         })),
     );
 
@@ -34,6 +36,7 @@ export default function BottomBar() {
         setIsSeeking,
         setTimeUpdate,
         setSeekTarget,
+        switchPlayMode
     } = usePlayerStore((state) => state.actions);
     return (
         <div className="fixed bottom-0 left-0 flex max-h-1/8 w-full justify-center bg-gray-200">
@@ -78,6 +81,9 @@ export default function BottomBar() {
                 ))}
             </div>
             <div>{`${timeFormat(currentTime)}:${timeFormat(duration)}`}</div>
+            <Button onClick={switchPlayMode}>
+                {palyMode}
+            </Button>
         </div>
     );
 }

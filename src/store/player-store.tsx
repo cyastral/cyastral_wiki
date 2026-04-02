@@ -10,11 +10,14 @@ export interface Song {
     id: number;
 }
 
+export type PlayMode = "list-order" | "list-loop" | "single-loop" | "random";
+
 export interface PlayerState {
     //持久化
     queue: Song[];
     currentIndex: number;
     volume: number;
+    playMode: PlayMode;
 
     //非持久化
     isPlaying: boolean;
@@ -29,6 +32,8 @@ export interface PlayerActions {
     nextSong: () => void;
     prevSong: () => void;
     togglePlay: () => void;
+    switchPlayMode: () => void;
+    autoNext: () => void;
 
     setVolume: (volume: number) => void;
     setTimeUpdate: (time: number) => void;
@@ -40,6 +45,7 @@ export interface PlayerActions {
 export type PlayerStore = PlayerState & { actions: PlayerActions };
 
 const defaultInitState: PlayerState = {
+    playMode: "list-order",
     queue: [],
     currentIndex: 0,
     volume: 0.2,
@@ -47,7 +53,7 @@ const defaultInitState: PlayerState = {
     currentTime: 0,
     duration: 0,
     isSeeking: false,
-    seekTarget:null,
+    seekTarget: null,
 };
 
 // 工厂函数
@@ -82,11 +88,43 @@ export const createPlayerStore = (
 
                     nextSong: () => {
                         set((state) => {
+                            const playMode = state.playMode;
+                            const listLength = state.queue.length;
+                            const nowIndex = state.currentIndex;
+                            if (state.queue.length === 0) return {};
                             let newIndex = 0;
-                            if (state.currentIndex + 1 == state.queue.length) {
-                                newIndex = 0;
-                            } else {
-                                newIndex = state.currentIndex + 1;
+                            newIndex = (nowIndex + 1) % listLength;
+                            return { currentIndex: newIndex, isPlaying: true };
+                        });
+                    },
+
+                    autoNext: () => {
+                        set((state) => {
+                            const playMode = state.playMode;
+                            const listLength = state.queue.length;
+                            const nowIndex = state.currentIndex;
+                            if (state.queue.length === 0) return {};
+                            let newIndex = 0;
+                            switch (playMode) {
+                                case "list-loop":
+                                    newIndex = (nowIndex + 1) % listLength;
+                                    break;
+                                case "list-order":
+                                    newIndex = (nowIndex + 1) % listLength;
+                                    if (newIndex === 0) {
+                                        return {
+                                            isPlaying: false,
+                                        };
+                                    }
+                                    break;
+                                case "single-loop":
+                                    return {};
+                                    break;
+                                case "random":
+                                    newIndex = Math.floor(
+                                        Math.random() * listLength,
+                                    );
+                                    break;
                             }
                             return {
                                 currentIndex: newIndex,
@@ -94,7 +132,6 @@ export const createPlayerStore = (
                             };
                         });
                     },
-
                     prevSong: () => {
                         set((state) => {
                             let newIndex = 0;
@@ -113,6 +150,22 @@ export const createPlayerStore = (
                     togglePlay: () => {
                         set((state) => ({ isPlaying: !state.isPlaying }));
                     },
+
+                    switchPlayMode: () => {
+                        set((state) => {
+                            const modes: PlayMode[] = [
+                                "list-order",
+                                "list-loop",
+                                "single-loop",
+                                "random",
+                            ];
+                            const nowIndex = modes.indexOf(state.playMode);
+                            const newIndex = (nowIndex + 1) % modes.length;
+                            return {
+                                playMode: modes[newIndex],
+                            };
+                        });
+                    },
                     setVolume(volume) {
                         set(() => ({ volume: volume }));
                     },
@@ -129,7 +182,7 @@ export const createPlayerStore = (
                         set(() => ({ isSeeking: isSeeking }));
                     },
                     setSeekTarget(time) {
-                        set(() => ({seekTarget: time}))
+                        set(() => ({ seekTarget: time }));
                     },
                 },
             }),
@@ -139,6 +192,7 @@ export const createPlayerStore = (
                     queue: state.queue,
                     volume: state.volume,
                     currentIndex: state.currentIndex,
+                    playMode: state.playMode,
                 }),
             },
         ),
