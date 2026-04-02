@@ -1,22 +1,45 @@
 "use client";
 
-import { usePlayerStore } from "@/store/player-store";
+import { usePlayerStore, usePlayerStoreApi } from "@/store/player-store";
 import { useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export function AudioEngine() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const currentLoadedId = useRef<number | null>(null);
 
-    const queue = usePlayerStore((state) => state.queue);
-    const currentIndex = usePlayerStore((state) => state.currentIndex);
-    const isPlaying = usePlayerStore((state) => state.isPlaying);
+    const { queue, currentIndex, isPlaying, volume, seekTarget } =
+        usePlayerStore(
+            useShallow((state) => ({
+                queue: state.queue,
+                currentIndex: state.currentIndex,
+                isPlaying: state.isPlaying,
+                volume: state.volume,
+                seekTarget: state.seekTarget,
+            })),
+        );
 
+    const { setTimeUpdate, setDuration, setSeekTarget } = usePlayerStore(
+        (state) => state.actions,
+    );
+    const storeApi = usePlayerStoreApi();
     //初始化
     useEffect(() => {
         audioRef.current = new Audio();
         audioRef.current.volume = 0.2;
-    }, []);
 
+        //绑定audio监听，同步当前时间与总长度
+        const audio = audioRef.current;
+        audio.addEventListener("timeupdate", () => {
+            //检查拖动状态
+            if (!storeApi.getState().isSeeking) {
+                setTimeUpdate(audio.currentTime);
+            }
+        });
+        audio.addEventListener("loadedmetadata", () => {
+            setDuration(audio.duration);
+        });
+    }, []);
 
     //状态同步
     useEffect(() => {
@@ -38,7 +61,23 @@ export function AudioEngine() {
         } else {
             audio.pause();
         }
-        
     }, [queue, currentIndex, isPlaying]);
+
+    //音量同步
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (audio) {
+            audio.volume = volume;
+        }
+    }, [volume]);
+
+    //拖动跳转
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (audio && seekTarget !== null) {
+            audio.currentTime = seekTarget;
+            setSeekTarget(null);
+        }
+    }, [seekTarget]);
     return null;
 }

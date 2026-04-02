@@ -71,7 +71,7 @@ export function DetailPlayer({ song }: { song: PlayerSong }) {
     }
 
     const handlePlay = () => {
-        player.playSong(song);
+        player.actions.playSong(song);
     };
 
     return (

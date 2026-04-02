@@ -21,6 +21,7 @@ export interface PlayerState {
     currentTime: number;
     duration: number;
     isSeeking: boolean;
+    seekTarget: number | null;
 }
 
 export interface PlayerActions {
@@ -30,10 +31,13 @@ export interface PlayerActions {
     togglePlay: () => void;
 
     setVolume: (volume: number) => void;
-    seek: (time: number) => void;
+    setTimeUpdate: (time: number) => void;
+    setDuration: (time: number) => void;
+    setIsSeeking: (isSeeking: boolean) => void;
+    setSeekTarget: (time: number | null) => void;
 }
 
-export type PlayerStore = PlayerState & PlayerActions;
+export type PlayerStore = PlayerState & { actions: PlayerActions };
 
 const defaultInitState: PlayerState = {
     queue: [],
@@ -43,6 +47,7 @@ const defaultInitState: PlayerState = {
     currentTime: 0,
     duration: 0,
     isSeeking: false,
+    seekTarget:null,
 };
 
 // 工厂函数
@@ -53,38 +58,79 @@ export const createPlayerStore = (
         persist(
             (set) => ({
                 ...initState,
-
-                playSong: (song) => {
-                    set((state) => {
-                        //查找是否已有该歌曲,没有返回-1
-                        const exitingIndex = state.queue.findIndex(
-                            (s) => s.id === song.id,
-                        );
-                        if (exitingIndex == -1) {
-                            const newQueue = [...state.queue, song];
+                actions: {
+                    playSong: (song) => {
+                        set((state) => {
+                            //查找是否已有该歌曲,没有返回-1
+                            const exitingIndex = state.queue.findIndex(
+                                (s) => s.id === song.id,
+                            );
+                            if (exitingIndex == -1) {
+                                const newQueue = [...state.queue, song];
+                                return {
+                                    queue: newQueue,
+                                    currentIndex: newQueue.length - 1,
+                                    isPlaying: true,
+                                };
+                            }
                             return {
-                                queue: newQueue,
-                                currentIndex: newQueue.length - 1,
+                                currentIndex: exitingIndex,
                                 isPlaying: true,
                             };
-                        }
-                        return {
-                            currentIndex: exitingIndex,
-                            isPlaying: true,
-                        };
-                    });
-                },
+                        });
+                    },
 
-                nextSong: () => {},
-                prevSong: () => {},
-                togglePlay: () => {
-                    set((state) => ({ isPlaying: !state.isPlaying }));
-                },
-                setVolume(volume) {
-                    set(() => ({ volume: volume }));
-                },
-                seek(time) {
-                    set(() => ({ currentTime: time }));
+                    nextSong: () => {
+                        set((state) => {
+                            let newIndex = 0;
+                            if (state.currentIndex + 1 == state.queue.length) {
+                                newIndex = 0;
+                            } else {
+                                newIndex = state.currentIndex + 1;
+                            }
+                            return {
+                                currentIndex: newIndex,
+                                isPlaying: true,
+                            };
+                        });
+                    },
+
+                    prevSong: () => {
+                        set((state) => {
+                            let newIndex = 0;
+                            if (state.currentIndex == 0) {
+                                newIndex = state.queue.length - 1;
+                            } else {
+                                newIndex = state.currentIndex - 1;
+                            }
+                            return {
+                                currentIndex: newIndex,
+                                isPlaying: true,
+                            };
+                        });
+                    },
+
+                    togglePlay: () => {
+                        set((state) => ({ isPlaying: !state.isPlaying }));
+                    },
+                    setVolume(volume) {
+                        set(() => ({ volume: volume }));
+                    },
+                    //更新时间,
+                    setTimeUpdate(time) {
+                        set(() => {
+                            return { currentTime: time };
+                        });
+                    },
+                    setDuration(time) {
+                        set(() => ({ duration: time }));
+                    },
+                    setIsSeeking(isSeeking) {
+                        set(() => ({ isSeeking: isSeeking }));
+                    },
+                    setSeekTarget(time) {
+                        set(() => ({seekTarget: time}))
+                    },
                 },
             }),
             {
@@ -133,4 +179,16 @@ export function usePlayerStore<T>(selector: (store: PlayerStore) => T): T {
     }
 
     return useStore(storeContext, selector);
+}
+// 返回普通api
+export function usePlayerStoreApi() {
+    const storeContext = useContext(PlayerStoreContext);
+
+    if (!storeContext) {
+        throw new Error(
+            "usePlayerStoreApi 必须在 PlayerStoreProvider 内部使用",
+        );
+    }
+
+    return storeContext;
 }
