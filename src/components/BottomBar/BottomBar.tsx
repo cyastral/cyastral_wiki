@@ -3,6 +3,7 @@ import { usePlayerStore } from "@/store/player-store";
 import { Button } from "../ui/button";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
+import { timeFormat } from "@/lib/timeFormat";
 
 export default function BottomBar() {
     const {
@@ -25,8 +26,15 @@ export default function BottomBar() {
         })),
     );
 
-    const { togglePlay, nextSong, prevSong, setVolume, setIsSeeking, setTimeUpdate ,setSeekTarget} =
-        usePlayerStore((state) => state.actions);
+    const {
+        togglePlay,
+        nextSong,
+        prevSong,
+        setVolume,
+        setIsSeeking,
+        setTimeUpdate,
+        setSeekTarget,
+    } = usePlayerStore((state) => state.actions);
     return (
         <div className="fixed bottom-0 left-0 flex max-h-1/8 w-full justify-center bg-gray-200">
             <div>Now Playing : {queue[currentIndex]?.name}</div>
@@ -69,7 +77,7 @@ export default function BottomBar() {
                     <div key={index}>{song.name}</div>
                 ))}
             </div>
-            <div>{currentTime}</div>
+            <div>{`${timeFormat(currentTime)}:${timeFormat(duration)}`}</div>
         </div>
     );
 }
