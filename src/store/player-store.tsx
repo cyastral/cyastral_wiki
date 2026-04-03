@@ -10,7 +10,7 @@ export interface Song {
     id: number;
 }
 
-export type PlayMode = "list-order" | "list-loop" | "single-loop" | "random";
+export type PlayMode = "list-order" | "list-loop" | "single-loop" | "shuffle";
 
 export interface PlayerState {
     //持久化
@@ -18,6 +18,7 @@ export interface PlayerState {
     currentIndex: number;
     volume: number;
     playMode: PlayMode;
+    shuffledIndexQueue: number[];
 
     //非持久化
     isPlaying: boolean;
@@ -54,7 +55,18 @@ const defaultInitState: PlayerState = {
     duration: 0,
     isSeeking: false,
     seekTarget: null,
+    shuffledIndexQueue: [],
 };
+
+//洗牌算法
+function shuffle<T>(array: T[]): T[] {
+    const newArr = [...array];
+    for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+}
 
 // 工厂函数
 export const createPlayerStore = (
@@ -92,6 +104,18 @@ export const createPlayerStore = (
                             const listLength = state.queue.length;
                             const nowIndex = state.currentIndex;
                             if (state.queue.length === 0) return {};
+                            if (playMode === "shuffle") {
+                                const shadowIndex =
+                                    state.shuffledIndexQueue.indexOf(nowIndex);
+                                const newShadowIndex =
+                                    (shadowIndex + 1) % listLength;
+                                const realQueueIndex =
+                                    state.shuffledIndexQueue[newShadowIndex];
+                                return {
+                                    currentIndex: realQueueIndex,
+                                    isPlaying: true,
+                                };
+                            }
                             let newIndex = 0;
                             newIndex = (nowIndex + 1) % listLength;
                             return { currentIndex: newIndex, isPlaying: true };
@@ -119,12 +143,21 @@ export const createPlayerStore = (
                                     break;
                                 case "single-loop":
                                     return {};
-                                    break;
-                                case "random":
-                                    newIndex = Math.floor(
-                                        Math.random() * listLength,
-                                    );
-                                    break;
+                                case "shuffle":
+                                    const shadowIndex =
+                                        state.shuffledIndexQueue.indexOf(
+                                            nowIndex,
+                                        );
+                                    const newShadowIndex =
+                                        (shadowIndex + 1) % listLength;
+                                    const realQueueIndex =
+                                        state.shuffledIndexQueue[
+                                            newShadowIndex
+                                        ];
+                                    return {
+                                        currentIndex: realQueueIndex,
+                                        isPlaying: true,
+                                    };
                             }
                             return {
                                 currentIndex: newIndex,
@@ -134,16 +167,25 @@ export const createPlayerStore = (
                     },
                     prevSong: () => {
                         set((state) => {
-                            let newIndex = 0;
-                            if (state.currentIndex == 0) {
-                                newIndex = state.queue.length - 1;
-                            } else {
-                                newIndex = state.currentIndex - 1;
+                            const playMode = state.playMode;
+                            const listLength = state.queue.length;
+                            const nowIndex = state.currentIndex;
+                            if (state.queue.length === 0) return {};
+                            if (playMode === "shuffle") {
+                                const shadowIndex =
+                                    state.shuffledIndexQueue.indexOf(nowIndex);
+                                const newShadowIndex =
+                                    (shadowIndex + listLength - 1) % listLength;
+                                const realQueueIndex =
+                                    state.shuffledIndexQueue[newShadowIndex];
+                                return {
+                                    currentIndex: realQueueIndex,
+                                    isPlaying: true,
+                                };
                             }
-                            return {
-                                currentIndex: newIndex,
-                                isPlaying: true,
-                            };
+                            let newIndex = 0;
+                            newIndex = (nowIndex + listLength - 1) % listLength;
+                            return { currentIndex: newIndex, isPlaying: true };
                         });
                     },
 
@@ -157,10 +199,35 @@ export const createPlayerStore = (
                                 "list-order",
                                 "list-loop",
                                 "single-loop",
-                                "random",
+                                "shuffle",
                             ];
                             const nowIndex = modes.indexOf(state.playMode);
                             const newIndex = (nowIndex + 1) % modes.length;
+                            const queueLength = state.queue.length;
+                            if (modes[newIndex] === "shuffle") {
+                                if (
+                                    state.currentIndex === undefined ||
+                                    queueLength === 0
+                                )
+                                    return {
+                                        //todo:怎么处理这种情况？
+                                    };
+                                const queueIndex = Array.from(
+                                    { length: queueLength },
+                                    (_, i) => i,
+                                );
+                                const filtedQueueIndex = queueIndex.filter(
+                                    (i) => i !== state.currentIndex,
+                                );
+                                const shuffledQueue = [
+                                    state.currentIndex,
+                                    ...shuffle(filtedQueueIndex),
+                                ];
+                                return {
+                                    playMode: modes[newIndex],
+                                    shuffledIndexQueue: shuffledQueue,
+                                };
+                            }
                             return {
                                 playMode: modes[newIndex],
                             };
@@ -193,6 +260,7 @@ export const createPlayerStore = (
                     volume: state.volume,
                     currentIndex: state.currentIndex,
                     playMode: state.playMode,
+                    shuffledIndexQueue: state.shuffledIndexQueue,
                 }),
             },
         ),
