@@ -41,6 +41,8 @@ export interface PlayerActions {
     setDuration: (time: number) => void;
     setIsSeeking: (isSeeking: boolean) => void;
     setSeekTarget: (time: number | null) => void;
+
+    _rebuildShuffleQueue: () => void;
 }
 
 export type PlayerStore = PlayerState & { actions: PlayerActions };
@@ -74,118 +76,193 @@ export const createPlayerStore = (
 ) => {
     return createStore<PlayerStore>()(
         persist(
-            (set) => ({
+            (set, get) => ({
                 ...initState,
                 actions: {
+                    _rebuildShuffleQueue: () => {
+                        const { queue, playMode, currentIndex } = get();
+                        const queueLength = queue.length;
+                        if (playMode !== "shuffle" || queueLength === 0) {
+                        }
+
+                        //建立真实queue的位置索引
+                        const queueIndex = Array.from(
+                            { length: queueLength },
+                            (_, i) => i,
+                        );
+
+                        //剔除当前播放
+                        const filtedQueueIndex = queueIndex.filter(
+                            (i) => i !== currentIndex,
+                        );
+
+                        //打乱后把当前播放放回首位
+                        const shuffledQueue = [
+                            currentIndex,
+                            ...shuffle(filtedQueueIndex),
+                        ];
+
+                        //存入打乱的影子列表
+                        set({ shuffledIndexQueue: shuffledQueue });
+                    },
                     playSong: (song) => {
-                        set((state) => {
-                            //查找是否已有该歌曲,没有返回-1
-                            const exitingIndex = state.queue.findIndex(
-                                (s) => s.id === song.id,
-                            );
-                            if (exitingIndex == -1) {
-                                const newQueue = [...state.queue, song];
-                                return {
-                                    queue: newQueue,
-                                    currentIndex: newQueue.length - 1,
-                                    isPlaying: true,
-                                };
-                            }
-                            return {
-                                currentIndex: exitingIndex,
-                                isPlaying: true,
-                            };
+                        const state = get();
+                        const { queue, playMode } = state;
+
+                        //查找是否已有该歌曲,没有返回-1
+                        let targetIndex = queue.findIndex(
+                            (s) => s.id === song.id,
+                        );
+                        //处理播放新歌逻辑
+                        if (targetIndex == -1) {
+                            const newQueue = [...queue, song];
+                            targetIndex = newQueue.length - 1; //新插入的歌总在列表最后
+                            set({ queue: newQueue });
+                        }
+
+                        //无论是否插入新歌，同步播放状态
+                        set({
+                            currentIndex: targetIndex,
+                            isPlaying: true,
+                            seekTarget: 0,
                         });
+
+                        if (playMode === "shuffle") {
+                            get().actions._rebuildShuffleQueue();
+                        }
                     },
 
                     nextSong: () => {
-                        set((state) => {
-                            const playMode = state.playMode;
-                            const listLength = state.queue.length;
-                            const nowIndex = state.currentIndex;
-                            if (state.queue.length === 0) return {};
-                            if (playMode === "shuffle") {
-                                const shadowIndex =
-                                    state.shuffledIndexQueue.indexOf(nowIndex);
-                                const newShadowIndex =
-                                    (shadowIndex + 1) % listLength;
-                                const realQueueIndex =
-                                    state.shuffledIndexQueue[newShadowIndex];
-                                return {
-                                    currentIndex: realQueueIndex,
-                                    isPlaying: true,
-                                };
-                            }
-                            let newIndex = 0;
-                            newIndex = (nowIndex + 1) % listLength;
-                            return { currentIndex: newIndex, isPlaying: true };
+                        const state = get();
+                        const {
+                            queue,
+                            currentIndex,
+                            playMode,
+                            shuffledIndexQueue,
+                        } = state;
+                        const listLength = queue.length;
+
+                        if (listLength === 0) return {};
+                        if (listLength === 1) {
+                            set({ seekTarget: 0, isPlaying: true });
+                            return;
+                        }
+
+                        let newIndex = 0;
+
+                        //处理shuffle下的切换逻辑
+                        if (playMode === "shuffle") {
+                            //shadow序列里找到现在播放的index
+                            let shadowIndex =
+                                shuffledIndexQueue.indexOf(currentIndex);
+
+                            if (shadowIndex === -1) shadowIndex = 0;
+
+                            //shadow序列里的下一首index
+                            const newShadowIndex =
+                                (shadowIndex + 1) % listLength;
+
+                            //查询下一首对应实际序列的index,并写入准备更新
+                            newIndex = state.shuffledIndexQueue[newShadowIndex];
+                        } else {
+                            //非shuffle逻辑
+                            newIndex = (currentIndex + 1) % listLength;
+                        }
+
+                        //统一处理提交
+                        set({
+                            currentIndex: newIndex,
+                            isPlaying: true,
+                            seekTarget: 0,
                         });
                     },
 
                     autoNext: () => {
-                        set((state) => {
-                            const playMode = state.playMode;
-                            const listLength = state.queue.length;
-                            const nowIndex = state.currentIndex;
-                            if (state.queue.length === 0) return {};
-                            let newIndex = 0;
-                            switch (playMode) {
-                                case "list-loop":
-                                    newIndex = (nowIndex + 1) % listLength;
-                                    break;
-                                case "list-order":
-                                    newIndex = (nowIndex + 1) % listLength;
-                                    if (newIndex === 0) {
-                                        return {
-                                            isPlaying: false,
-                                        };
-                                    }
-                                    break;
-                                case "single-loop":
-                                    return {};
-                                case "shuffle":
-                                    const shadowIndex =
-                                        state.shuffledIndexQueue.indexOf(
-                                            nowIndex,
-                                        );
-                                    const newShadowIndex =
-                                        (shadowIndex + 1) % listLength;
-                                    const realQueueIndex =
-                                        state.shuffledIndexQueue[
-                                            newShadowIndex
-                                        ];
-                                    return {
-                                        currentIndex: realQueueIndex,
-                                        isPlaying: true,
-                                    };
-                            }
-                            return {
-                                currentIndex: newIndex,
-                                isPlaying: true,
-                            };
-                        });
-                    },
-                    prevSong: () => {
-                        set((state) => {
-                            const playMode = state.playMode;
-                            const listLength = state.queue.length;
-                            const nowIndex = state.currentIndex;
-                            if (state.queue.length === 0) return {};
-                            if (playMode === "shuffle") {
+                        const state = get();
+                        const {
+                            queue,
+                            currentIndex,
+                            playMode,
+                            shuffledIndexQueue,
+                        } = state;
+                        const listLength = queue.length;
+
+                        if (state.queue.length === 0) return {};
+
+                        let newIndex = currentIndex;
+
+                        switch (playMode) {
+                            case "list-loop":
+                                newIndex = (currentIndex + 1) % listLength;
+                                break;
+                            case "list-order":
+                                newIndex = (currentIndex + 1) % listLength;
+                                if (newIndex === 0) {
+                                    set({ isPlaying: false, currentTime: 0 });
+                                    return;
+                                }
+                                break;
+                            case "single-loop":
+                                return;
+                            case "shuffle":
                                 const shadowIndex =
-                                    state.shuffledIndexQueue.indexOf(nowIndex);
+                                    state.shuffledIndexQueue.indexOf(
+                                        currentIndex,
+                                    );
                                 const newShadowIndex =
-                                    (shadowIndex + listLength - 1) % listLength;
+                                    (shadowIndex + 1) % listLength;
                                 const realQueueIndex =
                                     state.shuffledIndexQueue[newShadowIndex];
-                                return {
-                                    currentIndex: realQueueIndex,
-                                    isPlaying: true,
-                                };
-                            }
-                            let newIndex = 0;
-                            newIndex = (nowIndex + listLength - 1) % listLength;
-                            return { currentIndex: newIndex, isPlaying: true };
+                                newIndex = realQueueIndex;
+                        }
+                        //统一处理提交
+                        set({
+                            currentIndex: newIndex,
+                            isPlaying: true,
+                            seekTarget: 0,
+                        });
+                    },
+                    // 💡 在 PlayerActions 中
+                    prevSong: () => {
+                        const state = get();
+                        const {
+                            queue,
+                            currentIndex,
+                            playMode,
+                            shuffledIndexQueue,
+                        } = state;
+                        const listLength = queue.length;
+
+                        if (listLength === 0) return;
+                        if (listLength === 1) {
+                            set({
+                                seekTarget: 0,
+                                isPlaying: true,
+                            });
+                            return;
+                        }
+
+                        let newIndex = 0;
+
+                        if (playMode === "shuffle") {
+                            let shadowIndex =
+                                shuffledIndexQueue.indexOf(currentIndex);
+
+                            if (shadowIndex === -1) shadowIndex = 0;
+
+                            const newShadowIndex =
+                                (shadowIndex - 1 + listLength) % listLength;
+
+                            newIndex = shuffledIndexQueue[newShadowIndex];
+                        } else {
+                            newIndex =
+                                (currentIndex - 1 + listLength) % listLength;
+                        }
+
+                        set({
+                            currentIndex: newIndex,
+                            isPlaying: true,
+                            seekTarget: 0,
                         });
                     },
 
@@ -194,44 +271,33 @@ export const createPlayerStore = (
                     },
 
                     switchPlayMode: () => {
-                        set((state) => {
-                            const modes: PlayMode[] = [
-                                "list-order",
-                                "list-loop",
-                                "single-loop",
-                                "shuffle",
-                            ];
-                            const nowIndex = modes.indexOf(state.playMode);
-                            const newIndex = (nowIndex + 1) % modes.length;
-                            const queueLength = state.queue.length;
-                            if (modes[newIndex] === "shuffle") {
-                                if (
-                                    state.currentIndex === undefined ||
-                                    queueLength === 0
-                                )
-                                    return {
-                                        //todo:怎么处理这种情况？
-                                    };
-                                const queueIndex = Array.from(
-                                    { length: queueLength },
-                                    (_, i) => i,
-                                );
-                                const filtedQueueIndex = queueIndex.filter(
-                                    (i) => i !== state.currentIndex,
-                                );
-                                const shuffledQueue = [
-                                    state.currentIndex,
-                                    ...shuffle(filtedQueueIndex),
-                                ];
-                                return {
-                                    playMode: modes[newIndex],
-                                    shuffledIndexQueue: shuffledQueue,
-                                };
-                            }
-                            return {
-                                playMode: modes[newIndex],
-                            };
-                        });
+                        const state = get();
+
+                        const modes: PlayMode[] = [
+                            "list-order",
+                            "list-loop",
+                            "single-loop",
+                            "shuffle",
+                        ];
+                        const nowIndex = modes.indexOf(state.playMode);
+                        const newIndex = (nowIndex + 1) % modes.length;
+                        const nextMode = modes[newIndex];
+
+                        // 处理空列表
+                        if (
+                            state.queue.length === 0 ||
+                            state.currentIndex === undefined
+                        ) {
+                            set({ playMode: nextMode });
+                            return;
+                        }
+
+                        set({ playMode: nextMode });
+
+                        //处理shuffle模式
+                        if (nextMode === "shuffle") {
+                            get().actions._rebuildShuffleQueue();
+                        }
                     },
                     setVolume(volume) {
                         set(() => ({ volume: volume }));
