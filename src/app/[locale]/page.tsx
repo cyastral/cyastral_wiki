@@ -7,7 +7,7 @@ export default function SimpleLayout() {
     const t = useTranslations("HomePage");
 
     return (
-        <>
+        <div className="bg-amber-200 h-screen">
             <h1 className="text-3xl text-red-500">Hello World</h1>
             <Button asChild>
                 <Link href="/admin/createvcsinger">Create A Vcsinger</Link>
@@ -15,6 +15,6 @@ export default function SimpleLayout() {
             <Button asChild>
                 <Link href="/songs/add">Submit New Song!</Link>
             </Button>
-        </>
+        </div>
     );
 }
