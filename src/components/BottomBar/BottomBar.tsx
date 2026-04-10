@@ -1,9 +1,11 @@
 "use client";
 import { usePlayerStore } from "@/store/player-store";
 import { Button } from "../ui/button";
-import { ListMusic, Pause, Play, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { ListMusic, Pause, Play, SkipBack, SkipForward, Trash2, Volume1 } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { timeFormat } from "@/lib/timeFormat";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import SongCard from "../SongCard";
 
 export default function BottomBar() {
     const { queue, currentIndex, isPlaying, volume, currentTime, isSeeking, duration, palyMode } = usePlayerStore(
@@ -72,7 +74,7 @@ export default function BottomBar() {
                 <div className="flex w-36 items-center">
                     <Volume1 className="shrink-0" />
                     <input
-                    className="flex-1"
+                        className="flex-1"
                         type="range"
                         min={0}
                         max={1.0}
@@ -87,9 +89,29 @@ export default function BottomBar() {
                 <Button onClick={switchPlayMode} variant="ghost" className="w-20">
                     {palyMode}
                 </Button>
-                <Button variant="ghost" size="padIcon" className="gap-0" >
-                    <ListMusic className="size-5"/>
-                </Button>
+
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="ghost" size="padIcon">
+                            <ListMusic className="size-5" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" align="end" sideOffset={24} className="w-100">
+                        <div className="flex flex-col">
+                            <div className="flex w-full items-center justify-between">
+                                <span className="text-lg">播放列表({queue.length})</span>
+                                <Button variant="ghost" size="padIcon" className="">
+                                    <Trash2 className="size-6"></Trash2>
+                                </Button>
+                            </div>
+                            <div>
+                                {queue.map((song, index) => (
+                                    <div key={index}>{song.name}</div>
+                                ))}
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
         </div>
     );
