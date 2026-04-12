@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import SongCard from "@/components/SongCard";
+import { mapDbSongtoPlayerSong } from "@/lib/mapDbSongtoPlayersong";
 import { getPrisma } from "@/lib/prisma";
 
 export default async function SongList({
@@ -20,11 +21,12 @@ export default async function SongList({
         },
     });
 
+    const appSong = songs.map((s) => mapDbSongtoPlayerSong(s));
     return (
         <>
             <div className="flex w-full flex-col items-center">
-                {songs.map((song) => (
-                    <SongCard key={song.id} song={song} />
+                {appSong.map((song) => (
+                    <SongCard key={song.id} song={song} variant="default"/>
                 ))}
             </div>
         </>

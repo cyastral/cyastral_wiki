@@ -21,6 +21,7 @@ export default async function songInfoPage({
         where: {
             id: songID,
         },
+        include: { singers: true },
     });
     if (!song) notFound();
 

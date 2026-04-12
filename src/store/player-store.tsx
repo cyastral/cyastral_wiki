@@ -3,18 +3,13 @@ import { createStore } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
 import { createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
-
-export interface Song {
-    name: string;
-    audioUrl: string | null;
-    id: number;
-}
+import { AppSong } from "@/lib/types/music";
 
 export type PlayMode = "list-order" | "list-loop" | "single-loop" | "shuffle";
 
 export interface PlayerState {
     //持久化
-    queue: Song[];
+    queue: AppSong[];
     currentIndex: number;
     volume: number;
     playMode: PlayMode;
@@ -29,7 +24,7 @@ export interface PlayerState {
 }
 
 export interface PlayerActions {
-    playSong: (song: Song) => void;
+    playSong: (song: AppSong) => void;
     nextSong: () => void;
     prevSong: () => void;
     togglePlay: () => void;

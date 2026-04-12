@@ -1,9 +1,19 @@
-import type { Song as PrismaSong } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { AppSong, AppSinger } from "./types/music";
 
-export function mapDbSongtoPlayerSong(dbSong: PrismaSong) {
+type DbSong = Prisma.SongGetPayload<{ include: { singers: true } }>;
+
+export function mapDbSongtoPlayerSong(DbSong: DbSong): AppSong {
     return {
-        name: dbSong.songName,
-        audioUrl: dbSong.audioUrl,
-        id: dbSong.id,
+        title: DbSong.songName,
+        audioUrl: DbSong.audioUrl,
+        id: DbSong.id,
+        singers:
+            DbSong.singers && DbSong.singers.length > 0
+                ? DbSong.singers.map((s) => ({
+                      id: s.id,
+                      name: s.name,
+                  }))
+                : [],
     };
 }
