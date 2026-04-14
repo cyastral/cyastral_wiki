@@ -30,6 +30,8 @@ export interface PlayerActions {
     togglePlay: () => void;
     switchPlayMode: () => void;
     autoNext: () => void;
+    removeSong: (id: number) => void;
+    removeList: () => void;
 
     setVolume: (volume: number) => void;
     setTimeUpdate: (time: number) => void;
@@ -65,10 +67,13 @@ function shuffle<T>(array: T[]): T[] {
     return newArr;
 }
 
+/*
+    shuffle模式下，保留currentIndex和列表数组，并用以控制播放。
+    维护一个shuffledIndexQueue，保存打乱后的Index映射，作为切歌时计算currentIndex的基准。
+*/
+
 // 工厂函数
-export const createPlayerStore = (
-    initState: PlayerState = defaultInitState,
-) => {
+export const createPlayerStore = (initState: PlayerState = defaultInitState) => {
     return createStore<PlayerStore>()(
         persist(
             (set, get) => ({
@@ -81,21 +86,13 @@ export const createPlayerStore = (
                         }
 
                         //建立真实queue的位置索引
-                        const queueIndex = Array.from(
-                            { length: queueLength },
-                            (_, i) => i,
-                        );
+                        const queueIndex = Array.from({ length: queueLength }, (_, i) => i);
 
                         //剔除当前播放
-                        const filtedQueueIndex = queueIndex.filter(
-                            (i) => i !== currentIndex,
-                        );
+                        const filtedQueueIndex = queueIndex.filter((i) => i !== currentIndex);
 
                         //打乱后把当前播放放回首位
-                        const shuffledQueue = [
-                            currentIndex,
-                            ...shuffle(filtedQueueIndex),
-                        ];
+                        const shuffledQueue = [currentIndex, ...shuffle(filtedQueueIndex)];
 
                         //存入打乱的影子列表
                         set({ shuffledIndexQueue: shuffledQueue });
@@ -105,9 +102,7 @@ export const createPlayerStore = (
                         const { queue, playMode } = state;
 
                         //查找是否已有该歌曲,没有返回-1
-                        let targetIndex = queue.findIndex(
-                            (s) => s.id === song.id,
-                        );
+                        let targetIndex = queue.findIndex((s) => s.id === song.id);
                         //处理播放新歌逻辑
                         if (targetIndex == -1) {
                             const newQueue = [...queue, song];
@@ -129,12 +124,7 @@ export const createPlayerStore = (
 
                     nextSong: () => {
                         const state = get();
-                        const {
-                            queue,
-                            currentIndex,
-                            playMode,
-                            shuffledIndexQueue,
-                        } = state;
+                        const { queue, currentIndex, playMode, shuffledIndexQueue } = state;
                         const listLength = queue.length;
 
                         if (listLength === 0) return {};
@@ -148,14 +138,12 @@ export const createPlayerStore = (
                         //处理shuffle下的切换逻辑
                         if (playMode === "shuffle") {
                             //shadow序列里找到现在播放的index
-                            let shadowIndex =
-                                shuffledIndexQueue.indexOf(currentIndex);
+                            let shadowIndex = shuffledIndexQueue.indexOf(currentIndex);
 
                             if (shadowIndex === -1) shadowIndex = 0;
 
                             //shadow序列里的下一首index
-                            const newShadowIndex =
-                                (shadowIndex + 1) % listLength;
+                            const newShadowIndex = (shadowIndex + 1) % listLength;
 
                             //查询下一首对应实际序列的index,并写入准备更新
                             newIndex = state.shuffledIndexQueue[newShadowIndex];
@@ -174,12 +162,7 @@ export const createPlayerStore = (
 
                     autoNext: () => {
                         const state = get();
-                        const {
-                            queue,
-                            currentIndex,
-                            playMode,
-                            shuffledIndexQueue,
-                        } = state;
+                        const { queue, currentIndex, playMode, shuffledIndexQueue } = state;
                         const listLength = queue.length;
 
                         if (state.queue.length === 0) return {};
@@ -200,14 +183,9 @@ export const createPlayerStore = (
                             case "single-loop":
                                 return;
                             case "shuffle":
-                                const shadowIndex =
-                                    state.shuffledIndexQueue.indexOf(
-                                        currentIndex,
-                                    );
-                                const newShadowIndex =
-                                    (shadowIndex + 1) % listLength;
-                                const realQueueIndex =
-                                    state.shuffledIndexQueue[newShadowIndex];
+                                const shadowIndex = shuffledIndexQueue.indexOf(currentIndex);
+                                const newShadowIndex = (shadowIndex + 1) % listLength;
+                                const realQueueIndex = shuffledIndexQueue[newShadowIndex];
                                 newIndex = realQueueIndex;
                         }
                         //统一处理提交
@@ -220,12 +198,7 @@ export const createPlayerStore = (
                     // 💡 在 PlayerActions 中
                     prevSong: () => {
                         const state = get();
-                        const {
-                            queue,
-                            currentIndex,
-                            playMode,
-                            shuffledIndexQueue,
-                        } = state;
+                        const { queue, currentIndex, playMode, shuffledIndexQueue } = state;
                         const listLength = queue.length;
 
                         if (listLength === 0) return;
@@ -240,24 +213,56 @@ export const createPlayerStore = (
                         let newIndex = 0;
 
                         if (playMode === "shuffle") {
-                            let shadowIndex =
-                                shuffledIndexQueue.indexOf(currentIndex);
+                            let shadowIndex = shuffledIndexQueue.indexOf(currentIndex);
 
                             if (shadowIndex === -1) shadowIndex = 0;
 
-                            const newShadowIndex =
-                                (shadowIndex - 1 + listLength) % listLength;
+                            const newShadowIndex = (shadowIndex - 1 + listLength) % listLength;
 
                             newIndex = shuffledIndexQueue[newShadowIndex];
                         } else {
-                            newIndex =
-                                (currentIndex - 1 + listLength) % listLength;
+                            newIndex = (currentIndex - 1 + listLength) % listLength;
                         }
 
                         set({
                             currentIndex: newIndex,
                             isPlaying: true,
                             seekTarget: 0,
+                        });
+                    },
+
+                    removeSong: (id) => {
+                        const state = get();
+                        const { queue, currentIndex, playMode } = state;
+                        const listLength = queue.length;
+                        let newIndex = currentIndex;
+                        const targetIndex = queue.findIndex((s) => s.id === id);
+                        if (targetIndex === -1) return;
+                        const newQueue = queue.filter((song) => song.id !== id);
+                        if (newQueue.length === 0) {
+                            state.actions.removeList();
+                            return;
+                        }
+                        if (targetIndex < currentIndex) {
+                            newIndex = currentIndex - 1;
+                        } else if (targetIndex === currentIndex) {
+                            newIndex = currentIndex;
+                            if (currentIndex === listLength - 1) newIndex = 0;
+                        }
+
+                        set({
+                            queue: newQueue,
+                            currentIndex: newIndex,
+                        });
+                    },
+
+                    removeList: () => {
+                        set({
+                            queue: [],
+                            currentIndex: 0,
+                            isPlaying: false,
+                            currentTime: 0,
+                            shuffledIndexQueue: [],
                         });
                     },
 
@@ -268,21 +273,13 @@ export const createPlayerStore = (
                     switchPlayMode: () => {
                         const state = get();
 
-                        const modes: PlayMode[] = [
-                            "list-order",
-                            "list-loop",
-                            "single-loop",
-                            "shuffle",
-                        ];
+                        const modes: PlayMode[] = ["list-order", "list-loop", "single-loop", "shuffle"];
                         const nowIndex = modes.indexOf(state.playMode);
                         const newIndex = (nowIndex + 1) % modes.length;
                         const nextMode = modes[newIndex];
 
                         // 处理空列表
-                        if (
-                            state.queue.length === 0 ||
-                            state.currentIndex === undefined
-                        ) {
+                        if (state.queue.length === 0 || state.currentIndex === undefined) {
                             set({ playMode: nextMode });
                             return;
                         }
@@ -329,16 +326,10 @@ export const createPlayerStore = (
 };
 
 // 创建 Context
-export const PlayerStoreContext = createContext<ReturnType<
-    typeof createPlayerStore
-> | null>(null);
+export const PlayerStoreContext = createContext<ReturnType<typeof createPlayerStore> | null>(null);
 
 // 导出 Provider 组件
-export const PlayerStoreProvider = ({
-    children,
-}: {
-    children: React.ReactNode;
-}) => {
+export const PlayerStoreProvider = ({ children }: { children: React.ReactNode }) => {
     const storeRef = useRef<ReturnType<typeof createPlayerStore> | null>(null);
 
     //如果没有store，创建一个
@@ -346,11 +337,7 @@ export const PlayerStoreProvider = ({
         storeRef.current = createPlayerStore();
     }
 
-    return (
-        <PlayerStoreContext.Provider value={storeRef.current}>
-            {children}
-        </PlayerStoreContext.Provider>
-    );
+    return <PlayerStoreContext.Provider value={storeRef.current}>{children}</PlayerStoreContext.Provider>;
 };
 
 //自定义hook
@@ -368,9 +355,7 @@ export function usePlayerStoreApi() {
     const storeContext = useContext(PlayerStoreContext);
 
     if (!storeContext) {
-        throw new Error(
-            "usePlayerStoreApi 必须在 PlayerStoreProvider 内部使用",
-        );
+        throw new Error("usePlayerStoreApi 必须在 PlayerStoreProvider 内部使用");
     }
 
     return storeContext;

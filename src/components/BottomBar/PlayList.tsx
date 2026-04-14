@@ -5,16 +5,17 @@ import { usePlayerStore } from "@/store/player-store";
 import { useShallow } from "zustand/react/shallow";
 import SongCard from "../SongCard";
 export function PlayList() {
-    const { queue } = usePlayerStore(
+    const { queue, removeList } = usePlayerStore(
         useShallow((state) => ({
             queue: state.queue,
+            removeList: state.actions.removeList
         })),
     );
 
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="padIcon">
+                <Button variant="ghost" size="padIcon" >
                     <ListMusic className="size-5" />
                 </Button>
             </PopoverTrigger>
@@ -22,7 +23,7 @@ export function PlayList() {
                 <div className="flex flex-col">
                     <div className="flex w-full items-center justify-between">
                         <span className="text-lg">播放列表({queue.length})</span>
-                        <Button variant="ghost" size="padIcon" className="">
+                        <Button variant="ghost" size="padIcon" className="" onClick={removeList}>
                             <Trash2 className="size-6"></Trash2>
                         </Button>
                     </div>

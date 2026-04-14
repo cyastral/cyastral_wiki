@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { Prisma } from "@prisma/client";
-import { Pause, Play, PlayIcon } from "lucide-react";
+import { Pause, Play, PlayIcon, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { AppSong } from "@/lib/types/music";
 import { usePlayerStore } from "@/store/player-store";
@@ -59,7 +59,7 @@ function DefaultSongCard({ song }: SongProps) {
 }
 
 function PlayListSongCard({ song }: SongProps) {
-    const { playSong, togglePlay } = usePlayerStore((state) => state.actions);
+    const { playSong, togglePlay, removeSong } = usePlayerStore((state) => state.actions);
 
     const { isPlaying, isActive } = usePlayerStore(
         useShallow((state) => ({
@@ -100,6 +100,13 @@ function PlayListSongCard({ song }: SongProps) {
                 <span className="select-none">{song.title}</span>
                 <span className="select-none">artisit</span>
             </div>
+            <button className="relative"
+            onClick={(e) => {
+                e.stopPropagation();
+                removeSong(song.id);
+            }}>
+                <Trash2></Trash2>
+            </button>
         </div>
     );
 }

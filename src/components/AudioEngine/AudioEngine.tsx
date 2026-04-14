@@ -8,20 +8,18 @@ export function AudioEngine() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const currentLoadedId = useRef<number | null>(null);
 
-    const { queue, currentIndex, isPlaying, volume, seekTarget, playMode } =
-        usePlayerStore(
-            useShallow((state) => ({
-                queue: state.queue,
-                currentIndex: state.currentIndex,
-                isPlaying: state.isPlaying,
-                volume: state.volume,
-                seekTarget: state.seekTarget,
-                playMode: state.playMode,
-            })),
-        );
+    const { queue, currentIndex, isPlaying, volume, seekTarget, playMode } = usePlayerStore(
+        useShallow((state) => ({
+            queue: state.queue,
+            currentIndex: state.currentIndex,
+            isPlaying: state.isPlaying,
+            volume: state.volume,
+            seekTarget: state.seekTarget,
+            playMode: state.playMode,
+        })),
+    );
 
-    const { setTimeUpdate, setDuration, setSeekTarget, autoNext } =
-        usePlayerStore((state) => state.actions);
+    const { setTimeUpdate, setDuration, setSeekTarget, autoNext } = usePlayerStore((state) => state.actions);
     const storeApi = usePlayerStoreApi();
     //初始化
     useEffect(() => {
@@ -50,14 +48,19 @@ export function AudioEngine() {
     useEffect(() => {
         const audio = audioRef.current;
         const currentAudio = queue[currentIndex];
-        if (!audio || !currentAudio) return;
+        if (!audio) return;
 
+        //列表为空
+        if (!currentAudio) {
+            audio.pause();
+            audio.src = "";
+            currentLoadedId.current = null;
+            return;
+        }
         //当前播放不一致，更新当前src
-        if (
-            currentAudio.id != currentLoadedId.current &&
-            currentAudio.audioUrl
-        ) {
+        if (currentAudio.id != currentLoadedId.current && currentAudio.audioUrl) {
             audio.src = currentAudio.audioUrl;
+            //重新存当前id作为对比依据
             currentLoadedId.current = currentAudio.id;
         }
 
