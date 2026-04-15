@@ -236,23 +236,43 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                         const { queue, currentIndex, playMode } = state;
                         const listLength = queue.length;
                         let newIndex = currentIndex;
+                        let shouldReset = false;
+                        let newShuffledQueue = state.shuffledIndexQueue;
                         const targetIndex = queue.findIndex((s) => s.id === id);
                         if (targetIndex === -1) return;
                         const newQueue = queue.filter((song) => song.id !== id);
+
+                        //只有一首
                         if (newQueue.length === 0) {
                             state.actions.removeList();
                             return;
                         }
+
                         if (targetIndex < currentIndex) {
                             newIndex = currentIndex - 1;
                         } else if (targetIndex === currentIndex) {
+                            //删除目标=当前播放
+                            shouldReset = true;
                             newIndex = currentIndex;
+                            //删除当前播放，同时是最后一首
                             if (currentIndex === listLength - 1) newIndex = 0;
                         }
 
+                        if (playMode === "shuffle") {
+                            //映射变化
+                            newShuffledQueue = state.shuffledIndexQueue
+                                .filter((shadowIndex) => shadowIndex !== targetIndex)
+                                .map((shadowIndex) => {
+                                    if (shadowIndex <= targetIndex) return shadowIndex;
+                                    else return shadowIndex - 1;
+                                });
+                            //当前变化
+                        }
                         set({
                             queue: newQueue,
                             currentIndex: newIndex,
+                            ...(shouldReset ? { seekTarget: 0 } : {}),
+                            shuffledIndexQueue: newShuffledQueue,
                         });
                     },
 
