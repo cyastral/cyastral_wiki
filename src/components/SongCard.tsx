@@ -16,6 +16,7 @@ import { Button } from "./ui/button";
 import { AppSong } from "@/lib/types/music";
 import { usePlayerStore } from "@/store/player-store";
 import { useShallow } from "zustand/react/shallow";
+import { AnimatePresence, motion } from "motion/react";
 
 interface SongProps {
     song: AppSong;
@@ -76,10 +77,14 @@ function PlayListSongCard({ song }: SongProps) {
         }
     };
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0}}
+            transition={{ duration: 0.8 }}
+            exit={{ opacity: 0, x:20 }}
             className="hover:bg-accent flex p-2 select-none"
             onDoubleClick={(e) => {
-                handleAction(); 
+                handleAction();
                 console.log("双击");
             }}
         >
@@ -100,13 +105,15 @@ function PlayListSongCard({ song }: SongProps) {
                 <span className="select-none">{song.title}</span>
                 <span className="select-none">artisit</span>
             </div>
-            <button className="relative"
-            onClick={(e) => {
-                e.stopPropagation();
-                removeSong(song.id);
-            }}>
+            <button
+                className="relative"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    removeSong(song.id);
+                }}
+            >
                 <Trash2></Trash2>
             </button>
-        </div>
+        </motion.div>
     );
 }
