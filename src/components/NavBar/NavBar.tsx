@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 export default function NavBar() {
     return (
         <div>
-            <header className="h-14">
+            <header className="h-navbar">
                 <div className="flex h-full items-center justify-between px-4">
                     <Link
                         href="/"

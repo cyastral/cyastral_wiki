@@ -26,7 +26,7 @@ export default function BottomBar() {
         usePlayerStore((state) => state.actions);
     const song = queue[currentIndex];
     return (
-        <div className="bg-background/90 border-border fixed bottom-0 left-0 flex h-24 w-full items-center justify-between border-t-2 px-4 backdrop-blur-md">
+        <div className="bg-background/90 border-border fixed bottom-0 left-0 flex h-bottombar w-full items-center justify-between border-t-2 px-4 backdrop-blur-md">
             <div className="flex w-1/3 items-center justify-start gap-3">
                 <img
                     src="https://placehold.co/60x60/333/FFF?text=Music"

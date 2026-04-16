@@ -16,11 +16,12 @@ import { Button } from "./ui/button";
 import { AppSong } from "@/lib/types/music";
 import { usePlayerStore } from "@/store/player-store";
 import { useShallow } from "zustand/react/shallow";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, Variants } from "motion/react";
 
 interface SongProps {
     song: AppSong;
     variant?: "default" | "playList";
+    variants?: Variants;
 }
 
 export default function SongCard({ variant = "default", ...restProps }: SongProps) {
@@ -59,7 +60,7 @@ function DefaultSongCard({ song }: SongProps) {
     );
 }
 
-function PlayListSongCard({ song }: SongProps) {
+function PlayListSongCard({ song, variants }: SongProps) {
     const { playSong, togglePlay, removeSong } = usePlayerStore((state) => state.actions);
 
     const { isPlaying, isActive } = usePlayerStore(
@@ -78,11 +79,8 @@ function PlayListSongCard({ song }: SongProps) {
     };
     return (
         <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0}}
-            transition={{ duration: 0.8 }}
-            exit={{ opacity: 0, x:20 }}
             className="hover:bg-accent flex p-2 select-none"
+            variants={variants}
             onDoubleClick={(e) => {
                 handleAction();
                 console.log("双击");
