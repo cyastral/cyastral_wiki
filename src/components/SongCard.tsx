@@ -21,7 +21,7 @@ import { AnimatePresence, motion, Variants } from "motion/react";
 interface SongProps {
     song: AppSong;
     variant?: "default" | "playList";
-    variants?: Variants;
+    isExist?: boolean;
 }
 
 export default function SongCard({ variant = "default", ...restProps }: SongProps) {
@@ -60,8 +60,20 @@ function DefaultSongCard({ song }: SongProps) {
     );
 }
 
-function PlayListSongCard({ song, variants }: SongProps) {
+function PlayListSongCard({ song, isExist }: SongProps) {
     const { playSong, togglePlay, removeSong } = usePlayerStore((state) => state.actions);
+    const itemVariant: Variants = {
+        close: { opacity: 0, x: 120 }, 
+        open: {
+            opacity: 1,
+            x: 0,
+            transition: {
+                duration: 0.5,
+                ease:"easeOut"
+            },
+        },
+        exit: {opacity: 0}
+    };
 
     const { isPlaying, isActive } = usePlayerStore(
         useShallow((state) => ({
@@ -78,40 +90,47 @@ function PlayListSongCard({ song, variants }: SongProps) {
         }
     };
     return (
-        <motion.div
-            className="hover:bg-accent flex p-2 select-none"
-            variants={variants}
-            onDoubleClick={(e) => {
-                handleAction();
-                console.log("双击");
-            }}
-        >
-            <button
-                className="relative"
-                onClick={(e) => {
-                    e.stopPropagation();
+
+            <motion.div
+                className="hover:bg-accent flex gap-1 p-1 select-none"
+                variants={itemVariant}
+                initial={isExist ? undefined : "close"}
+                animate={isExist ? undefined : "open"}
+                exit={isExist ? undefined : "exit"}
+                onDoubleClick={(e) => {
                     handleAction();
-                    console.log("单击");
+                    console.log("双击");
                 }}
             >
-                <img src="https://placehold.co/60x60/333/FFF?text=Music" alt={song.title} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    {isActive && isPlaying ? <Pause className="fill-white" /> : <Play className="fill-white" />}
+                <button
+                    className="relative size-16  shrink-0 rounded-md"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction();
+                        console.log("单击");
+                    }}
+                >
+                    <img src="https://placehold.co/60x60/333/FFF?text=Music" className="rounded-md" alt={song.title} />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                        {isActive && isPlaying ? <Pause className="fill-white" /> : <Play className="fill-white" />}
+                    </div>
+                </button>
+
+                <div className="flex flex-col flex-1 min-w-0 py-2">
+                    <span className="select-none text-sm truncate text-foreground">{song.title}</span>
+                    <span className="select-none text-xs truncate text-muted-foreground">{String(isExist)}</span>
+                    
                 </div>
-            </button>
-            <div>
-                <span className="select-none">{song.title}</span>
-                <span className="select-none">artisit</span>
-            </div>
-            <button
-                className="relative"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    removeSong(song.id);
-                }}
-            >
-                <Trash2></Trash2>
-            </button>
-        </motion.div>
+
+                <button
+                    className="relative shrink-0"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        removeSong(song.id);
+                    }}
+                >
+                    <Trash2></Trash2>
+                </button>
+            </motion.div>
     );
 }

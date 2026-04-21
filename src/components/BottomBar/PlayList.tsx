@@ -1,13 +1,13 @@
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { motion } from "motion/react";
 import { Button } from "../ui/button";
 import { ListMusic, Pause, Play, Trash2 } from "lucide-react";
 import { usePlayerStore } from "@/store/player-store";
 import { useShallow } from "zustand/react/shallow";
 import SongCard from "../SongCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, Variants } from "motion/react";
 import { createPortal } from "react-dom";
+import { number } from "zod";
 
 export function PlayList() {
     const { queue, removeList } = usePlayerStore(
@@ -17,37 +17,34 @@ export function PlayList() {
         })),
     );
 
+    const initialLoadList = useRef<number[]>([]);
+
     const [mounted, setMounted] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
+    //绕过ssr服务端预渲染
     useEffect(() => {
         setMounted(true);
     }, []);
 
     const listVariant: Variants = {
-        hidden: { opacity: 0, x: 30 },
-        visible: {
+        close: { opacity: 0, x: 60 },
+        open: {
             opacity: 1,
             x: 0,
             transition: {
-                duration: 0.5,
+                duration: 0.3,
                 ease: "easeInOut",
-                delayChildren: 1.5,
                 staggerChildren: 0.1,
             },
         },
-        exit: { opacity: 0, x: 30 },
+        exit: { opacity: 0, x: 60 },
     };
-    const itemVariant: Variants = {
-        hidden: { opacity: 0, x: 0 },
-        visible: {
-            opacity: 1,
-            x: 0,
-            transition: {
-                duration: 3,
-            },
-        },
-    };
+
+    //实时更新列表，保证打开后的增删动画仍然生效
+    useEffect(() => {
+        initialLoadList.current = queue.map((s) => s.id);
+    }, [queue]);
 
     return (
         <div>
@@ -55,6 +52,9 @@ export function PlayList() {
                 variant="ghost"
                 size="padIcon"
                 onClick={() => {
+                    if (!isOpen) {
+                        initialLoadList.current = queue.map((s) => s.id);
+                    }
                     setIsOpen(!isOpen);
                 }}
             >
@@ -66,9 +66,9 @@ export function PlayList() {
                         {isOpen && (
                             <motion.div
                                 variants={listVariant}
-                                className="bg-accent fixed top-[calc(var(--height-navbar)+var(--spacing-playlistgap))] right-0 bottom-[calc(var(--height-bottombar)+var(--spacing-playlistgap))] z-50 rounded-xl p-2"
-                                initial="hidden"
-                                animate="visible"
+                                className="bg-accent fixed top-[calc(var(--height-navbar)+var(--spacing-playlistgap))] right-0 bottom-[calc(var(--height-bottombar)+var(--spacing-playlistgap))] z-50 w-90 rounded-xl p-2"
+                                initial="close"
+                                animate="open"
                                 exit="exit"
                             >
                                 <div className="flex w-full items-center justify-between">
@@ -78,9 +78,16 @@ export function PlayList() {
                                     </Button>
                                 </div>
                                 <div>
-                                    {queue.map((song) => (
-                                        <SongCard song={song} variant="playList" variants={itemVariant} key={song.id} />
-                                    ))}
+                                    <AnimatePresence>
+                                        {queue.map((song) => (
+                                            <SongCard
+                                                song={song}
+                                                variant="playList"
+                                                key={song.id}
+                                                isExist={initialLoadList.current.includes(song.id)}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
                                 </div>
                             </motion.div>
                         )}
