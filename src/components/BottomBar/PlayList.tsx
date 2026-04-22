@@ -41,6 +41,24 @@ export function PlayList() {
         exit: { opacity: 0, x: 60 },
     };
 
+    const itemVariant: Variants = {
+        close: { opacity: 0, x: 120 },
+        open: {
+            opacity: 1,
+            x: 0,
+            transition: {
+                duration: 0.5,
+                ease: "easeOut",
+            },
+        },
+        exit: { opacity: 0 },
+    };
+
+    const scheduleVariant = {
+        close: {},
+        open: {}
+    }
+
     //实时更新列表，保证打开后的增删动画仍然生效
     useEffect(() => {
         initialLoadList.current = queue.map((s) => s.id);
@@ -79,14 +97,19 @@ export function PlayList() {
                                 </div>
                                 <div>
                                     <AnimatePresence>
-                                        {queue.map((song) => (
-                                            <SongCard
-                                                song={song}
-                                                variant="playList"
-                                                key={song.id}
-                                                isExist={initialLoadList.current.includes(song.id)}
-                                            />
-                                        ))}
+                                        {queue.map((song) => {
+                                            const isExist = initialLoadList.current.includes(song.id);
+                                            return (
+                                                <motion.div
+                                                    variants={itemVariant}
+                                                    initial={isExist ? undefined : "close"}
+                                                    animate={isExist ? undefined : "open"}
+                                                    key={song.id}
+                                                >
+                                                    <SongCard song={song} variant="playList" />
+                                                </motion.div>
+                                            );
+                                        })}
                                     </AnimatePresence>
                                 </div>
                             </motion.div>
