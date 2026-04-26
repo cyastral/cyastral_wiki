@@ -47,8 +47,9 @@ export function PlayList() {
             opacity: 1,
             x: 0,
             transition: {
-                duration: 0.5,
-                ease: "easeOut",
+                type: "spring",
+                visualDuration: 0.3,
+                bounce:0.3
             },
         },
         exit: { opacity: 0 },
@@ -56,8 +57,8 @@ export function PlayList() {
 
     const scheduleVariant = {
         close: {},
-        open: {}
-    }
+        open: {},
+    };
 
     //实时更新列表，保证打开后的增删动画仍然生效
     useEffect(() => {
@@ -80,11 +81,11 @@ export function PlayList() {
             </Button>
             {mounted &&
                 createPortal(
-                    <AnimatePresence>
+                    <AnimatePresence >
                         {isOpen && (
                             <motion.div
                                 variants={listVariant}
-                                className="bg-accent fixed top-[calc(var(--height-navbar)+var(--spacing-playlistgap))] right-0 bottom-[calc(var(--height-bottombar)+var(--spacing-playlistgap))] z-50 w-90 rounded-xl p-2"
+                                className="bg-background fixed top-[calc(var(--height-navbar)+var(--spacing-playlistgap))] right-0 bottom-[calc(var(--height-bottombar)+var(--spacing-playlistgap))] z-50 w-90 rounded-xl p-2"
                                 initial="close"
                                 animate="open"
                                 exit="exit"
@@ -96,7 +97,7 @@ export function PlayList() {
                                     </Button>
                                 </div>
                                 <div>
-                                    <AnimatePresence>
+                                    <AnimatePresence mode="popLayout">
                                         {queue.map((song) => {
                                             const isExist = initialLoadList.current.includes(song.id);
                                             return (
@@ -105,6 +106,7 @@ export function PlayList() {
                                                     initial={isExist ? undefined : "close"}
                                                     animate={isExist ? undefined : "open"}
                                                     key={song.id}
+                                                    layout
                                                 >
                                                     <SongCard song={song} variant="playList" />
                                                 </motion.div>

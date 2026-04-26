@@ -59,9 +59,8 @@ function DefaultSongCard({ song }: SongProps) {
     );
 }
 
-function PlayListSongCard({ song}: SongProps) {
+function PlayListSongCard({ song }: SongProps) {
     const { playSong, togglePlay, removeSong } = usePlayerStore((state) => state.actions);
-
 
     const { isPlaying, isActive } = usePlayerStore(
         useShallow((state) => ({
@@ -79,8 +78,9 @@ function PlayListSongCard({ song}: SongProps) {
     };
     return (
         <motion.div
-            className="hover:bg-accent flex gap-1 p-1 select-none"
-            exit={{opacity: 0}}
+            className="hover:bg-accent flex gap-1 p-1 select-none rounded-lg"
+            exit={{ opacity: 0 }}
+            whileHover={{scale:1.03}}
             onDoubleClick={(e) => {
                 handleAction();
                 console.log("双击");
@@ -103,7 +103,6 @@ function PlayListSongCard({ song}: SongProps) {
             <div className="flex min-w-0 flex-1 flex-col py-2">
                 <span className="text-foreground truncate text-sm select-none">{song.title}</span>
             </div>
-
             <button
                 className="relative shrink-0"
                 onClick={(e) => {
