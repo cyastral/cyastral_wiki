@@ -9,15 +9,15 @@ import { AnimatePresence, Variants } from "motion/react";
 import { createPortal } from "react-dom";
 import { number } from "zod";
 
-export function PlayList() {
-    const { queue, removeList } = usePlayerStore(
+export function QueuePanel() {
+    const { queue, clearQueue } = usePlayerStore(
         useShallow((state) => ({
             queue: state.queue,
-            removeList: state.actions.removeList,
+            clearQueue: state.actions.clearQueue,
         })),
     );
 
-    const initialLoadList = useRef<number[]>([]);
+    const initialLoadQueue = useRef<number[]>([]);
 
     const [mounted, setMounted] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +27,7 @@ export function PlayList() {
         setMounted(true);
     }, []);
 
-    const listVariant: Variants = {
+    const queueVariant: Variants = {
         close: { opacity: 0, x: 60 },
         open: {
             opacity: 1,
@@ -49,7 +49,7 @@ export function PlayList() {
             transition: {
                 type: "spring",
                 visualDuration: 0.3,
-                bounce:0.3
+                bounce: 0.3,
             },
         },
         exit: { opacity: 0 },
@@ -62,7 +62,7 @@ export function PlayList() {
 
     //实时更新列表，保证打开后的增删动画仍然生效
     useEffect(() => {
-        initialLoadList.current = queue.map((s) => s.id);
+        initialLoadQueue.current = queue.map((s) => s.id);
     }, [queue]);
 
     return (
@@ -72,7 +72,7 @@ export function PlayList() {
                 size="padIcon"
                 onClick={() => {
                     if (!isOpen) {
-                        initialLoadList.current = queue.map((s) => s.id);
+                        initialLoadQueue.current = queue.map((s) => s.id);
                     }
                     setIsOpen(!isOpen);
                 }}
@@ -81,25 +81,25 @@ export function PlayList() {
             </Button>
             {mounted &&
                 createPortal(
-                    <AnimatePresence >
+                    <AnimatePresence>
                         {isOpen && (
                             <motion.div
-                                variants={listVariant}
-                                className="bg-background fixed top-[calc(var(--height-navbar)+var(--spacing-playlistgap))] right-0 bottom-[calc(var(--height-bottombar)+var(--spacing-playlistgap))] z-50 w-90 rounded-xl p-2"
+                                variants={queueVariant}
+                                className="bg-background border-border fixed top-[calc(var(--height-navbar)+var(--spacing-queuegap))] right-0 bottom-[calc(var(--height-bottombar)+var(--spacing-queuegap))] z-50 w-90 rounded-xl border-2 p-2 shadow-md"
                                 initial="close"
                                 animate="open"
                                 exit="exit"
                             >
                                 <div className="flex w-full items-center justify-between">
-                                    <span className="text-lg">播放列表({queue.length})</span>
-                                    <Button variant="ghost" size="padIcon" className="" onClick={removeList}>
+                                    <span className="text-lg">播放队列({queue.length})</span>
+                                    <Button variant="ghost" size="padIcon" className="" onClick={clearQueue}>
                                         <Trash2 className="size-6"></Trash2>
                                     </Button>
                                 </div>
                                 <div>
                                     <AnimatePresence mode="popLayout">
                                         {queue.map((song) => {
-                                            const isExist = initialLoadList.current.includes(song.id);
+                                            const isExist = initialLoadQueue.current.includes(song.id);
                                             return (
                                                 <motion.div
                                                     variants={itemVariant}
@@ -108,7 +108,7 @@ export function PlayList() {
                                                     key={song.id}
                                                     layout
                                                 >
-                                                    <SongCard song={song} variant="playList" />
+                                                    <SongCard song={song} variant="queue" />
                                                 </motion.div>
                                             );
                                         })}

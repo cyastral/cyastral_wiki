@@ -20,12 +20,12 @@ import { AnimatePresence, motion, Variants } from "motion/react";
 
 interface SongProps {
     song: AppSong;
-    variant?: "default" | "playList";
+    variant?: "default" | "queue";
 }
 
 export default function SongCard({ variant = "default", ...restProps }: SongProps) {
     if (variant === "default") return <DefaultSongCard {...restProps} />;
-    else return <PlayListSongCard {...restProps} />;
+    else return <QueueSongCard {...restProps} />;
 }
 
 function DefaultSongCard({ song }: SongProps) {
@@ -59,7 +59,7 @@ function DefaultSongCard({ song }: SongProps) {
     );
 }
 
-function PlayListSongCard({ song }: SongProps) {
+function QueueSongCard({ song }: SongProps) {
     const { playSong, togglePlay, removeSong } = usePlayerStore((state) => state.actions);
 
     const { isPlaying, isActive } = usePlayerStore(

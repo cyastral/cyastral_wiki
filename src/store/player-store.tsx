@@ -5,7 +5,7 @@ import { createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
 import { AppSong } from "@/lib/types/music";
 
-export type PlayMode = "list-order" | "list-loop" | "single-loop" | "shuffle";
+export type PlayMode = "queue-order" | "queue-loop" | "single-loop" | "shuffle";
 
 export interface PlayerState {
     //持久化
@@ -31,7 +31,7 @@ export interface PlayerActions {
     switchPlayMode: () => void;
     autoNext: () => void;
     removeSong: (id: number) => void;
-    removeList: () => void;
+    clearQueue: () => void;
 
     setVolume: (volume: number) => void;
     setTimeUpdate: (time: number) => void;
@@ -45,7 +45,7 @@ export interface PlayerActions {
 export type PlayerStore = PlayerState & { actions: PlayerActions };
 
 const defaultInitState: PlayerState = {
-    playMode: "list-order",
+    playMode: "queue-order",
     queue: [],
     currentIndex: 0,
     volume: 0.2,
@@ -125,10 +125,10 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                     nextSong: () => {
                         const state = get();
                         const { queue, currentIndex, playMode, shuffledIndexQueue } = state;
-                        const listLength = queue.length;
+                        const queueLength = queue.length;
 
-                        if (listLength === 0) return {};
-                        if (listLength === 1) {
+                        if (queueLength === 0) return {};
+                        if (queueLength === 1) {
                             set({ seekTarget: 0, isPlaying: true });
                             return;
                         }
@@ -143,13 +143,13 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                             if (shadowIndex === -1) shadowIndex = 0;
 
                             //shadow序列里的下一首index
-                            const newShadowIndex = (shadowIndex + 1) % listLength;
+                            const newShadowIndex = (shadowIndex + 1) % queueLength;
 
                             //查询下一首对应实际序列的index,并写入准备更新
                             newIndex = state.shuffledIndexQueue[newShadowIndex];
                         } else {
                             //非shuffle逻辑
-                            newIndex = (currentIndex + 1) % listLength;
+                            newIndex = (currentIndex + 1) % queueLength;
                         }
 
                         //统一处理提交
@@ -163,18 +163,18 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                     autoNext: () => {
                         const state = get();
                         const { queue, currentIndex, playMode, shuffledIndexQueue } = state;
-                        const listLength = queue.length;
+                        const queueLength = queue.length;
 
                         if (state.queue.length === 0) return {};
 
                         let newIndex = currentIndex;
 
                         switch (playMode) {
-                            case "list-loop":
-                                newIndex = (currentIndex + 1) % listLength;
+                            case "queue-loop":
+                                newIndex = (currentIndex + 1) % queueLength;
                                 break;
-                            case "list-order":
-                                newIndex = (currentIndex + 1) % listLength;
+                            case "queue-order":
+                                newIndex = (currentIndex + 1) % queueLength;
                                 if (newIndex === 0) {
                                     set({ isPlaying: false, currentTime: 0 });
                                     return;
@@ -184,7 +184,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                                 return;
                             case "shuffle":
                                 const shadowIndex = shuffledIndexQueue.indexOf(currentIndex);
-                                const newShadowIndex = (shadowIndex + 1) % listLength;
+                                const newShadowIndex = (shadowIndex + 1) % queueLength;
                                 const realQueueIndex = shuffledIndexQueue[newShadowIndex];
                                 newIndex = realQueueIndex;
                         }
@@ -199,10 +199,10 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                     prevSong: () => {
                         const state = get();
                         const { queue, currentIndex, playMode, shuffledIndexQueue } = state;
-                        const listLength = queue.length;
+                        const queueLength = queue.length;
 
-                        if (listLength === 0) return;
-                        if (listLength === 1) {
+                        if (queueLength === 0) return;
+                        if (queueLength === 1) {
                             set({
                                 seekTarget: 0,
                                 isPlaying: true,
@@ -217,11 +217,11 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
 
                             if (shadowIndex === -1) shadowIndex = 0;
 
-                            const newShadowIndex = (shadowIndex - 1 + listLength) % listLength;
+                            const newShadowIndex = (shadowIndex - 1 + queueLength) % queueLength;
 
                             newIndex = shuffledIndexQueue[newShadowIndex];
                         } else {
-                            newIndex = (currentIndex - 1 + listLength) % listLength;
+                            newIndex = (currentIndex - 1 + queueLength) % queueLength;
                         }
 
                         set({
@@ -234,7 +234,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                     removeSong: (id) => {
                         const state = get();
                         const { queue, currentIndex, playMode } = state;
-                        const listLength = queue.length;
+                        const queueLength = queue.length;
                         let newIndex = currentIndex;
                         let shouldReset = false;
                         let newShuffledQueue = state.shuffledIndexQueue;
@@ -244,7 +244,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
 
                         //只有一首
                         if (newQueue.length === 0) {
-                            state.actions.removeList();
+                            state.actions.clearQueue();
                             return;
                         }
 
@@ -255,7 +255,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                             shouldReset = true;
                             newIndex = currentIndex;
                             //删除当前播放，同时是最后一首
-                            if (currentIndex === listLength - 1) newIndex = 0;
+                            if (currentIndex === queueLength - 1) newIndex = 0;
                         }
 
                         if (playMode === "shuffle") {
@@ -276,7 +276,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                         });
                     },
 
-                    removeList: () => {
+                    clearQueue: () => {
                         set({
                             queue: [],
                             currentIndex: 0,
@@ -293,7 +293,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
                     switchPlayMode: () => {
                         const state = get();
 
-                        const modes: PlayMode[] = ["list-order", "list-loop", "single-loop", "shuffle"];
+                        const modes: PlayMode[] = ["queue-order", "queue-loop", "single-loop", "shuffle"];
                         const nowIndex = modes.indexOf(state.playMode);
                         const newIndex = (nowIndex + 1) % modes.length;
                         const nextMode = modes[newIndex];

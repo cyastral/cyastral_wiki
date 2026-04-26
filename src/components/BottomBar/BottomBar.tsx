@@ -6,7 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { timeFormat } from "@/lib/timeFormat";
 
 import SongCard from "../SongCard";
-import { PlayList } from "./PlayList";
+import { QueuePanel } from "./QueuePanel";
 
 export default function BottomBar() {
     const { queue, currentIndex, isPlaying, volume, currentTime, isSeeking, duration, palyMode } = usePlayerStore(
@@ -26,7 +26,7 @@ export default function BottomBar() {
         usePlayerStore((state) => state.actions);
     const song = queue[currentIndex];
     return (
-        <div className="bg-background/90 border-border fixed bottom-0 left-0 flex h-bottombar w-full items-center justify-between border-t-2 px-4 backdrop-blur-md">
+        <div className="bg-background/90 border-border h-bottombar fixed bottom-0 left-0 flex w-full items-center justify-between border-t-2 px-4 backdrop-blur-md">
             <div className="flex w-1/3 items-center justify-start gap-3">
                 <img
                     src="https://placehold.co/60x60/333/FFF?text=Music"
@@ -86,7 +86,7 @@ export default function BottomBar() {
                         }}
                     />
                 </div>
-                <PlayList />
+                <QueuePanel />
                 <Button onClick={switchPlayMode} variant="ghost" className="w-20">
                     {palyMode}
                 </Button>
