@@ -18,6 +18,7 @@ model Song {
   audioUrl  String?
   source    String
   sourceId  String
+  playlists PlaylistSong[]
 }
 
 model Link {
@@ -45,4 +46,31 @@ model ProducerOnSongs {
   producerId Int
   song       Song     @relation(fields: [songId], references: [id])
   songId     Int
+}
+
+model Playlist {
+  id Int @id @default(autoincrement())
+  title String
+  isPublic Boolean @default(true)
+
+  songs PlaylistSong[]
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model PlaylistSong {
+  id Int @id @default(autoincrement())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  playlistId Int
+
+  order Int
+  addAt DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id] ,onDelete: Cascade)
+  songId Int
+
+  @@unique([playlistId, songId])
+  @@index([playlistId])
 }

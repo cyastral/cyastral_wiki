@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import { createPlaylist } from "@/actions/playlist";
 
 export default function SimpleLayout() {
     const t = useTranslations("HomePage");
@@ -14,6 +15,9 @@ export default function SimpleLayout() {
             </Button>
             <Button asChild>
                 <Link href="/songs/add">Submit New Song!</Link>
+            </Button>
+            <Button onClick={() => {createPlaylist("1")}}>
+                Create a Playlist 
             </Button>
         </div>
     );

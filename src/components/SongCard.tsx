@@ -17,6 +17,7 @@ import { AppSong } from "@/lib/types/music";
 import { usePlayerStore } from "@/store/player-store";
 import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion, Variants } from "motion/react";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "./ui/context-menu";
 
 interface SongProps {
     song: AppSong;
@@ -77,41 +78,52 @@ function QueueSongCard({ song }: SongProps) {
         }
     };
     return (
-        <motion.div
-            className="hover:bg-accent flex gap-1 p-1 select-none rounded-lg"
-            exit={{ opacity: 0 }}
-            whileHover={{scale:1.03}}
-            onDoubleClick={(e) => {
-                handleAction();
-                console.log("双击");
-            }}
-        >
-            <button
-                className="relative size-16 shrink-0 rounded-md"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handleAction();
-                    console.log("单击");
-                }}
-            >
-                <img src="https://placehold.co/60x60/333/FFF?text=Music" className="rounded-md" alt={song.title} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    {isActive && isPlaying ? <Pause className="fill-white" /> : <Play className="fill-white" />}
-                </div>
-            </button>
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <motion.div
+                    className="hover:bg-accent flex gap-1 rounded-lg p-1 select-none"
+                    exit={{ opacity: 0 }}
+                    whileHover={{ scale: 1.03 }}
+                    onDoubleClick={(e) => {
+                        handleAction();
+                        console.log("双击");
+                    }}
+                >
+                    <button
+                        className="relative size-16 shrink-0 rounded-md"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleAction();
+                            console.log("单击");
+                        }}
+                    >
+                        <img
+                            src="https://placehold.co/60x60/333/FFF?text=Music"
+                            className="rounded-md"
+                            alt={song.title}
+                        />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            {isActive && isPlaying ? <Pause className="fill-white" /> : <Play className="fill-white" />}
+                        </div>
+                    </button>
 
-            <div className="flex min-w-0 flex-1 flex-col py-2">
-                <span className="text-foreground truncate text-sm select-none">{song.title}</span>
-            </div>
-            <button
-                className="relative shrink-0"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    removeSong(song.id);
-                }}
-            >
-                <Trash2></Trash2>
-            </button>
-        </motion.div>
+                    <div className="flex min-w-0 flex-1 flex-col py-2">
+                        <span className="text-foreground truncate text-sm select-none">{song.title}</span>
+                    </div>
+                    <button
+                        className="relative shrink-0"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            removeSong(song.id);
+                        }}
+                    >
+                        <Trash2></Trash2>
+                    </button>
+                </motion.div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                <ContextMenuItem onClick={() => playSong(song)}>播放</ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     );
 }
