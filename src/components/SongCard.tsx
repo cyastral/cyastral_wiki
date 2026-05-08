@@ -17,7 +17,17 @@ import { AppSong } from "@/lib/types/music";
 import { usePlayerStore } from "@/store/player-store";
 import { useShallow } from "zustand/react/shallow";
 import { AnimatePresence, motion, Variants } from "motion/react";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "./ui/context-menu";
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSub,
+    ContextMenuSubContent,
+    ContextMenuSubTrigger,
+    ContextMenuTrigger,
+} from "./ui/context-menu";
+import { usePlaylistStore } from "@/store/playlist-store";
+import { addSongToPlaylist } from "@/actions/playlist";
 
 interface SongProps {
     song: AppSong;
@@ -69,6 +79,8 @@ function QueueSongCard({ song }: SongProps) {
             isActive: state.queue[state.currentIndex]?.id === song.id,
         })),
     );
+
+    const playlists = usePlaylistStore((state) => state.playlists);
 
     const handleAction = () => {
         if (isActive) {
@@ -123,6 +135,14 @@ function QueueSongCard({ song }: SongProps) {
             </ContextMenuTrigger>
             <ContextMenuContent>
                 <ContextMenuItem onClick={() => playSong(song)}>播放</ContextMenuItem>
+                <ContextMenuSub>
+                    <ContextMenuSubTrigger>添加到歌单</ContextMenuSubTrigger>
+                    <ContextMenuSubContent>
+                        {playlists.map((s) => (
+                            <ContextMenuItem key={s.id} onClick={() => addSongToPlaylist(s.id, song.id)}>添加到歌单{s.id}</ContextMenuItem>
+                        ))}
+                    </ContextMenuSubContent>
+                </ContextMenuSub>
             </ContextMenuContent>
         </ContextMenu>
     );

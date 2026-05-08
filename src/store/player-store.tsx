@@ -77,7 +77,7 @@ export const createPlayerStore = (initState: PlayerState = defaultInitState) => 
     return createStore<PlayerStore>()(
         persist(
             (set, get) => ({
-                ...initState,
+                ...initState, 
                 actions: {
                     _rebuildShuffleQueue: () => {
                         const { queue, playMode, currentIndex } = get();
@@ -361,16 +361,16 @@ export const PlayerStoreProvider = ({ children }: { children: React.ReactNode })
 };
 
 //自定义hook
-export function usePlayerStore<T>(selector: (store: PlayerStore) => T): T {
-    const storeContext = useContext(PlayerStoreContext);
+    export function usePlayerStore<T>(selector: (store: PlayerStore) => T): T {
+        const storeContext = useContext(PlayerStoreContext);
 
-    if (!storeContext) {
-        throw new Error("usePlayerStore 必须在 PlayerStoreProvider 内部使用");
+        if (!storeContext) {
+            throw new Error("usePlayerStore 必须在 PlayerStoreProvider 内部使用");
+        }
+
+        return useStore(storeContext, selector);
     }
-
-    return useStore(storeContext, selector);
-}
-// 返回普通api
+// 返回普通api(只提供方法)
 export function usePlayerStoreApi() {
     const storeContext = useContext(PlayerStoreContext);
 

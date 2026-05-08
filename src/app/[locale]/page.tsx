@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ export default function SimpleLayout() {
     const t = useTranslations("HomePage");
 
     return (
-        <div className="bg-amber-200 h-screen">
+        <div className="h-screen w-full bg-amber-200">
             <h1 className="text-3xl text-red-500">Hello World</h1>
             <Button asChild>
                 <Link href="/admin/createvcsinger">Create A Vcsinger</Link>
@@ -16,8 +17,12 @@ export default function SimpleLayout() {
             <Button asChild>
                 <Link href="/songs/add">Submit New Song!</Link>
             </Button>
-            <Button onClick={() => {createPlaylist("1")}}>
-                Create a Playlist 
+            <Button
+                onClick={() => {
+                    createPlaylist("1");
+                }}
+            >
+                Create a Playlist
             </Button>
         </div>
     );

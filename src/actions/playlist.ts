@@ -1,6 +1,7 @@
 "use server";
 
 import { getPrisma } from "@/lib/prisma";
+import { AppSong } from "@/lib/types/music";
 
 export async function createPlaylist(title: string, isPublic?: boolean) {
     const prisma = await getPrisma();
@@ -47,19 +48,39 @@ export async function getPlaylist(playlistId: number) {
                     order: "desc",
                 },
                 include: {
-                    song: true,
+                    song: {
+                        include: {
+                            singers: true,
+                        },
+                    },
                 },
             },
         },
     });
     if (!Result) {
-    return null;
-}
+        return null;
+    }
+
     return {
         ...Result,
-        songs:Result.songs.map((s) => ({
-            order: s.order,
-            song: s.song,
-        }))
+        songs: Result.songs.map((s) => {
+            const song: AppSong = {
+                id: s.song.id,
+                title: s.song.songName,
+                audioUrl: s.song.audioUrl,
+                singers: s.song.singers,
+            };
+            return {
+                song,
+            };
+        }),
     };
+}
+
+export async function getAllPlaylist() {
+    const prisma = await getPrisma();
+
+    const AllPlayList = await prisma.playlist.findMany();
+
+    return AllPlayList;
 }
