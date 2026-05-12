@@ -29,7 +29,7 @@ export async function signInAction(formdata: FormData) {
             password,
         },
     });
-    redirect({ href: "/", locale: "" });
+    redirect({ href: "/", locale: "user" });
 }
 
 export async function signOutAction() {
