@@ -3,6 +3,10 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
     output: "standalone",
+    serverExternalPackages: [
+    '@prisma/client', 
+    '@prisma/adapter-d1'
+  ],
     /* config options here */
 };
 
