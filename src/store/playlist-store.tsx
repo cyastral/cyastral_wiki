@@ -3,10 +3,9 @@
 import { createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
-import { Prisma } from "@prisma/client";
 import { getAllPlaylist } from "@/actions/playlist";
 
-type Playlist = Prisma.PromiseReturnType<typeof getAllPlaylist>[number];
+type Playlist = Awaited<ReturnType<typeof getAllPlaylist>>[number];
 
 export interface PlaylistState {
     playlists: Playlist[];

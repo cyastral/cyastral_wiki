@@ -2,10 +2,10 @@
 
 import { getAllPlaylist } from "@/actions/playlist";
 import { Link } from "@/i18n/navigation";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma-client";
 import { Play } from "lucide-react";
 
-type playlist = Prisma.PromiseReturnType<typeof getAllPlaylist>[number]
+type playlist = Awaited<ReturnType<typeof getAllPlaylist>>[number]
 
 export default function PlayListCard({ item }: { item: playlist }) {
     return (

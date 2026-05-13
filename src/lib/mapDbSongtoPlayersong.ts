@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma-client";
 import { AppSong, AppSinger } from "./types/music";
 
 type DbSong = Prisma.SongGetPayload<{ include: { singers: true } }>;

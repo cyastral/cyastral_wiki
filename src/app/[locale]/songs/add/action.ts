@@ -1,6 +1,6 @@
 "use server";
 import { getPrisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma-client";
 import { formSchema, FormType } from "./schema";
 
 type ActionState = {

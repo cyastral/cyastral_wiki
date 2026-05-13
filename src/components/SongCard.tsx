@@ -10,7 +10,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
-import { Prisma } from "@prisma/client";
+
 import { Pause, Play, PlayIcon, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { AppSong } from "@/lib/types/music";

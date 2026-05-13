@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { usePlayerStore } from "@/store/player-store";
-import type { Song as PlayerSong } from "@/store/player-store";
+import type { AppSong as PlayerSong } from "@/lib/types/music";
 import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

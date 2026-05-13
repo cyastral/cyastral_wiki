@@ -1,6 +1,6 @@
 name = "cyastral-wiki"
 main = ".open-next/worker.js"
-compatibility_date = "2025-03-25"
+compatibility_date = "2026-03-25"
 compatibility_flags = ["nodejs_compat","global_fetch_strictly_public"]
 
 [assets]
@@ -10,5 +10,24 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "cyastral-db"
-database_id = "8f3b3553-9d12-431c-bcde-86136c85604a"
-migrations_dir = "prisma/migrations"
+database_id = "8d354cda-622c-4c14-9383-889f191737c3"
+migrations_dir = "prisma/migrations/"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
+
+[[routes]]
+pattern = "astesola.top"
+custom_domain = true

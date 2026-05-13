@@ -1,0 +1,1 @@
+import("@prisma/client/wasm").then(console.log).catch(console.error);

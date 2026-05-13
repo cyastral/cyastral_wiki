@@ -22,7 +22,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { VirtualSinger } from "@prisma/client";
+import { VirtualSinger } from "@prisma-client";
 import { submitSong } from "../action";
 import { startTransition } from "react";
 import { FormType, formSchema } from "../schema";
