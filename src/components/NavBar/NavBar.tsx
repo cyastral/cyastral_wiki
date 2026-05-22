@@ -25,8 +25,12 @@ export default async function NavBar() {
                         <Link href="/songs/add" className="hover:bg-accent rounded-md p-2">
                             <Plus />
                         </Link>
-                        <Link href={session ? "/user" : "/signin"} className="hover:bg-accent rounded-md p-2">
-                            <User />
+                        <Link href="/user" className="hover:bg-accent size-10 overflow-hidden rounded-full border-2">
+                            {session?.user.image ? (
+                                <img src={session?.user.image} className="size-full object-cover" alt="Avatar"></img>
+                            ) : (
+                                <User className="size-full p-1" />
+                            )}
                         </Link>
                     </div>
                 </div>

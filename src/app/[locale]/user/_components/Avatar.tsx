@@ -18,7 +18,7 @@ export default function Avatar({ fileurl }: { fileurl: string | null | undefined
             console.log("取消选择");
             return;
         }
-        console.log(file);
+        console.log(file);              
         try {
             const { UpLoadUrl, fileKey } = await getAvatarUpLoadUrl(file.name);
             const response = await fetch(UpLoadUrl, {
@@ -51,6 +51,8 @@ export default function Avatar({ fileurl }: { fileurl: string | null | undefined
                     <User className="size-full text-gray-400" />
                 )}
             </div>
+
+            {/* 遮罩层 */}
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 transition duration-150 group-hover:opacity-100">
                 <Camera className="size-12"></Camera>
                 <span>选择照片</span>
