@@ -28,7 +28,7 @@ export default function Avatar({ fileurl }: { fileurl: string | null | undefined
                     //之后在getAvatarUpLoadUrl指定
                 },
             });
-            if (!response.ok) throw Error("上传失败"); //如果抛出错误，会以什么形式？我的程序会怎么样？
+            if (!response.ok) throw Error("上传失败"); 
             const updateRes = await updateAvatar(fileKey);
             if (!updateRes.success) throw Error("更新失败");
             router.refresh();

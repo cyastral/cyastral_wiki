@@ -1,15 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
-import "../globals.css";
+import "@/app/globals.css";
 import { NextIntlClientProvider } from "next-intl";
-import NavBar from "@/components/NavBar/NavBar";
 import { Toaster } from "@/components/ui/sonner";
-import { PlayerStoreProvider } from "@/store/player-store";
-import { PlaylistProvider } from "@/store/playlist-store";
-import BottomBar from "@/components/BottomBar/BottomBar";
-import { AudioEngine } from "@/components/AudioEngine/AudioEngine";
-import SideBar from "@/components/SideBar/SideBar";
-
 const roboto = Roboto({
     weight: ["300", "400", "500", "700"],
     subsets: ["latin"],
@@ -46,20 +39,8 @@ export default function RootLayout({
         <html lang="en" className={roboto.variable}>
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <NextIntlClientProvider>
-                    <div className="bg-background flex h-screen w-full flex-1 flex-col overflow-hidden">
-                        <NavBar />
-                        <PlaylistProvider>
-                            <PlayerStoreProvider>
-                                <div className="flex gap-x-2 overflow-hidden">
-                                    <SideBar></SideBar>
-                                    <main className="flex flex-1 overflow-y-auto">{children}</main>
-                                </div>
-                                <AudioEngine />
-                                <BottomBar />
-                            </PlayerStoreProvider>
-                        </PlaylistProvider>
-                        <Toaster />
-                    </div>
+                    {children}
+                    <Toaster />
                 </NextIntlClientProvider>
             </body>
         </html>
