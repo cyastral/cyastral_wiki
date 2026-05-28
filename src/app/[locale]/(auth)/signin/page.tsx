@@ -1,7 +1,4 @@
 "use client";
-
-import { signInAction } from "@/actions/auth";
-
 import { Card } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -9,8 +6,16 @@ import { Controller, useForm } from "react-hook-form";
 import { SignInFormValues, signInSchema } from "./schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { Link, redirect } from "@/i18n/navigation";
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
 
 export default function SignIn() {
+    const [submitError, setSubmitError] = useState<null | string>(null);
+    const [step, setStep] = useState<"form" | "OTP">("form");
+    const [otp, setOtp] = useState("");
+
     const form = useForm<SignInFormValues>({
         resolver: zodResolver(signInSchema),
         defaultValues: {
@@ -19,69 +24,167 @@ export default function SignIn() {
         },
         mode: "onBlur",
     });
+
     async function onSubmit(values: SignInFormValues) {
-        const result = await signInAction(values);
-        if (result?.error) {
-            alert("error");
+        //尝试登录
+        setSubmitError("");
+        const { data, error } = await authClient.signIn.email({
+            email: values.email,
+            password: values.password,
+        });
+        if (error) {
+            //处理未验证邮箱的账号
+            if (error.code === "EMAIL_NOT_VERIFIED") {
+                const otpResult = await authClient.emailOtp.sendVerificationOtp({
+                    email: values.email,
+                    type: "email-verification",
+                });
+                if (otpResult.error) {
+                    setSubmitError("尝试发送验证邮件失败: " + otpResult.error.message);
+                    return;
+                }
+                setStep("OTP");
+                return;
+            }
+
+            //处理密码错误的登录
+            if (error.code === "INVALID_EMAIL_OR_PASSWORD") {
+                setSubmitError("无效的邮箱或密码。");
+                return;
+            }
+
+            //处理其他错误
+            setSubmitError("其他错误：" + error.message);
+            return;
         }
+        redirect({ href: "/", locale: "user" });
     }
+
+    async function onVerify() {
+        //验证otp
+        const { error } = await authClient.emailOtp.verifyEmail({
+            email: form.getValues("email"),
+            otp: otp,
+        });
+        if (error) {
+            setSubmitError("验证码错误，请重试。");
+            return;
+        }
+
+        //验证otp后自动登录
+        const { error: signInError } = await authClient.signIn.email({
+            email: form.getValues("email"),
+            password: form.getValues("password"),
+        });
+        if (signInError) {
+            setSubmitError("自动登陆时出现问题：" + signInError.message);
+            return;
+        }
+
+        redirect({ href: "/", locale: "user" });
+    }
+
     return (
         <div className="flex w-full justify-center">
-            <Card className="flex w-100 flex-col items-center px-6">
-                <p className="text-3xl font-bold">欢迎回来</p>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-5">
-                    <Controller
-                        control={form.control}
-                        name="email"
-                        render={({ field, fieldState }) => (
-                            <Field>
-                                <FieldLabel>电子邮件地址</FieldLabel>
-                                <Input
-                                    {...field}
-                                    aria-invalid={fieldState.invalid}
-                                    placeholder="Enter your email"
-                                    className="border-ring/40 hover:border-ring/80 border-2"
-                                ></Input>
+            {step === "form" && (
+                <Card className="flex w-100 flex-col items-center px-6">
+                    <p className="text-3xl font-bold">欢迎回来</p>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-5">
+                        <Controller
+                            control={form.control}
+                            name="email"
+                            render={({ field, fieldState }) => (
+                                <Field>
+                                    <FieldLabel>电子邮件地址</FieldLabel>
+                                    <Input
+                                        {...field}
+                                        aria-invalid={fieldState.invalid}
+                                        placeholder="Enter your email"
+                                        className="border-ring/40 hover:border-ring/80 border-2"
+                                    ></Input>
 
-                                {/* Grid 1fr动画 */}
-                                <div
-                                    className={`grid transition-all duration-300 ease-in-out ${fieldState.invalid ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
-                                >
-                                    <div className="overflow-hidden">
-                                        <p className="min-h-[1.5rem] text-red-500">{fieldState.error?.message}</p>
+                                    {/* Grid 1fr动画 */}
+                                    <div
+                                        className={`grid transition-all duration-300 ease-in-out ${fieldState.invalid ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                                    >
+                                        <div className="overflow-hidden">
+                                            <p className="min-h-[1.5rem] text-red-500">{fieldState.error?.message}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </Field>
-                        )}
-                    />
-                    <Controller
-                        control={form.control}
-                        name="password"
-                        render={({ field, fieldState }) => (
-                            <Field>
-                                <FieldLabel>密码</FieldLabel>
-                                <Input
-                                    {...field}
-                                    aria-invalid={fieldState.invalid}
-                                    type="password"
-                                    className="border-ring/40 hover:border-ring/80 border-2"
-                                ></Input>
+                                </Field>
+                            )}
+                        />
+                        <Controller
+                            control={form.control}
+                            name="password"
+                            render={({ field, fieldState }) => (
+                                <Field>
+                                    <FieldLabel>密码</FieldLabel>
+                                    <Input
+                                        {...field}
+                                        aria-invalid={fieldState.invalid}
+                                        type="password"
+                                        className="border-ring/40 hover:border-ring/80 border-2"
+                                    ></Input>
 
-                                <div
-                                    className={`grid transition-all duration-300 ease-in-out ${fieldState.invalid ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
-                                >
-                                    <div className="overflow-hidden">
-                                        <p className="min-h-[1.5rem] text-red-500">{fieldState.error?.message}</p>
+                                    <div
+                                        className={`grid transition-all duration-300 ease-in-out ${fieldState.invalid ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                                    >
+                                        <div className="overflow-hidden">
+                                            <p className="min-h-[1.5rem] text-red-500">{fieldState.error?.message}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </Field>
-                        )}
-                    />
-                    <Button type="submit" className="h-12 w-full rounded-full">
-                        登录
-                    </Button>
-                </form>
-            </Card>
+                                </Field>
+                            )}
+                        />
+                        <Button
+                            type="submit"
+                            className="h-12 w-full rounded-full"
+                            disabled={form.formState.isSubmitting}
+                        >
+                            {form.formState.isSubmitting ? "处理中..." : "登录"}
+                        </Button>
+
+                        {/* interpolate-size动画，safari&firefox不兼容 */}
+                        <div
+                            className={`overflow-hidden transition-all duration-200 ease-in-out ${submitError ? "mt-1 h-auto opacity-100" : "mt-0 h-0 opacity-0"}`}
+                        >
+                            <p className="text-red-500">{submitError}</p>
+                        </div>
+
+                        <a className="">没有账号？</a>
+                        <Link
+                            href="/signup"
+                            className="inline-block font-semibold transition-all duration-75 ease-in-out hover:scale-110"
+                        >
+                            注册
+                        </Link>
+                    </form>
+                </Card>
+            )}
+            {step === "OTP" && (
+                <Card className="flex w-100 flex-col items-center px-6">
+                    <p className="text-3xl font-bold">{`我们已经向${form.getValues("email")}发送了一封邮件。`}</p>
+                    <InputOTP maxLength={6} id="otp" onComplete={onVerify} onChange={setOtp}>
+                        <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                        </InputOTPGroup>
+                        <InputOTPSeparator />
+                        <InputOTPGroup>
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                    </InputOTP>
+                    <div
+                        className={`overflow-hidden transition-all duration-200 ease-in-out ${submitError ? "mt-1 h-auto opacity-100" : "mt-0 h-0 opacity-0"}`}
+                    >
+                        <p className="text-red-500">{submitError}</p>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

@@ -13,7 +13,8 @@
         "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
         "db:check": "wrangler d1 migrations list cyastral-db --remote",
         "db:deploy": "wrangler d1 migrations apply cyastral-db --remote",
-        "db:dev": "prisma migrate dev"
+        "db:dev": "prisma migrate dev",
+        "email:dev": "email dev"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.1049.0",
@@ -30,6 +31,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dotenv": "^17.2.1",
+        "input-otp": "^1.4.2",
         "lucide-react": "^0.544.0",
         "motion": "^12.23.26",
         "next": "16.2.6",
@@ -39,7 +41,9 @@
         "radix-ui": "^1.4.3",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "react-email": "6.4.0",
         "react-hook-form": "^7.65.0",
+        "resend": "^6.12.4",
         "sonner": "^2.0.7",
         "tailwind-merge": "^3.3.1",
         "tailwindcss": "^4.1.13",
@@ -48,6 +52,7 @@
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",
+        "@react-email/ui": "6.4.0",
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",

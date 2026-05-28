@@ -23,9 +23,10 @@ export default async function User() {
     }
 
     return (
-        <div className="flex flex-col justify-center items-center w-full">
+        <div className="flex flex-col justify-center items-center w-full gap-2">
             <div>已登录</div>
             <Avatar fileurl={session.user.image}></Avatar>
+            <p className="text-2xl font-semibold">{session.user.name}</p>
             <p>userId: {session.user.id}</p>
             <form action={signOutAction}>
                 <Button type="submit">logOut</Button>

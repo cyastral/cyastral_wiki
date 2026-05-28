@@ -3,6 +3,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 // If your Prisma file is located elsewhere, you can change the path
 import { getPrisma } from "./prisma";
 import { nextCookies } from "better-auth/next-js";
+import { sendOTPEmail } from "@/lib/email/sendemail";
+import { emailOTP } from "better-auth/plugins";
 
 const prisma = await getPrisma();
 export const auth = betterAuth({
@@ -11,6 +13,7 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
+        requireEmailVerification: true,
     },
     // socialProviders: {
     //     github: {
@@ -18,5 +21,24 @@ export const auth = betterAuth({
     //         clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     //     },
     // },
-     plugins: [nextCookies()],
+    plugins: [
+        emailOTP({
+            overrideDefaultEmailVerification: true,
+            async sendVerificationOTP({ email, otp, type }) {
+                if (type == "sign-in") {
+                    await sendOTPEmail({
+                        email: email,
+                        otp: otp,
+                    });
+                } else if (type == "email-verification") {
+                    await sendOTPEmail({
+                        email: email,
+                        otp: otp,
+                    });
+                } else {
+                }
+            },
+        }),
+        nextCookies(),
+    ],
 });
