@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { SignInFormValues, signInSchema } from "./schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link,  useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
@@ -15,6 +15,8 @@ export default function SignIn() {
     const [submitError, setSubmitError] = useState<null | string>(null);
     const [step, setStep] = useState<"form" | "OTP">("form");
     const [otp, setOtp] = useState("");
+    const router = useRouter();
+
 
     const form = useForm<SignInFormValues>({
         resolver: zodResolver(signInSchema),
@@ -57,7 +59,7 @@ export default function SignIn() {
             setSubmitError("其他错误：" + error.message);
             return;
         }
-        redirect({ href: "/", locale: "user" });
+        router.push("/user");
     }
 
     async function onVerify() {
@@ -81,7 +83,7 @@ export default function SignIn() {
             return;
         }
 
-        redirect({ href: "/", locale: "user" });
+        router.push("/user");
     }
 
     return (

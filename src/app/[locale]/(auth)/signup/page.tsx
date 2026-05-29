@@ -6,16 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Controller, useForm } from "react-hook-form";
 import { SignUpFormValues, signUpSchema } from "./schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
 
+
 export default function SignUp() {
     const [submitError, setSubmitError] = useState<null | string>(null);
     const [step, setStep] = useState<"form" | "OTP">("form");
     const [otp, setOtp] = useState("");
+    const router = useRouter();
     const form = useForm<SignUpFormValues>({
         resolver: zodResolver(signUpSchema),
         defaultValues: {
@@ -73,7 +75,7 @@ export default function SignUp() {
             return;
         }
 
-        redirect({ href: "/", locale: "user" });
+        router.push("/user");
     }
 
     return (
