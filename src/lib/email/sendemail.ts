@@ -1,6 +1,5 @@
 import ResetCodeEmail from "../../../emails/testemail";
 import { Resend } from "resend";
-import { string } from "zod";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -9,7 +8,7 @@ export async function sendOTPEmail({ email, otp }: { email: string; otp: string 
         const { data, error } = await resend.emails.send({
             from: "Cyastral <no-reply@astesola.top>",
             to: email,
-            subject: otp,
+            subject: `Your Code is: ${otp}`,
             react: ResetCodeEmail({ code: otp }),
         });
 

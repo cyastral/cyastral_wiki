@@ -11,9 +11,11 @@
         "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
         "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
         "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+        "db:create": "wrangler d1 migrations create cyastral-db",
+        "db:diff": "prisma migrate diff --from-config-datasource --to-schema ./prisma/schema.prisma --script -o",
+        "db:apply:local": "wrangler d1 migrations apply cyastral-db --local",
         "db:check": "wrangler d1 migrations list cyastral-db --remote",
         "db:deploy": "wrangler d1 migrations apply cyastral-db --remote",
-        "db:dev": "prisma migrate dev",
         "email:dev": "email dev"
     },
     "dependencies": {

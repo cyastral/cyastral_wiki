@@ -9,13 +9,18 @@ import { randomUUID } from "crypto";
 import { getPrisma } from "@/lib/prisma";
 
 export async function getAvatarUpLoadUrl(filename: string) {
+    // 用于生成预签名url，以及之前的验证
+
+    //身份验证
     const session = await auth.api.getSession({
         headers: await headers(),
     });
     if (!session) throw new Error("未登录");
 
+    //用用户名+uuid构造文件名
     const ext = path.extname(filename);
     const fileKey = `user/avatar/${session.user.id}-${randomUUID()}${ext}`;
+
     const UpLoadUrl = await getSignedUrl(
         s3,
         new PutObjectCommand({
@@ -37,6 +42,8 @@ export async function updateAvatar(fileKey: string) {
 
     const prisma = await getPrisma();
     const url = `${process.env.R2_PUBLIC_DOMAIN}/${fileKey}`;
+
+    // 更新数据库，直接覆盖
     const result = await prisma.user.update({
         where: { id: session.user.id },
         data: { image: url },
